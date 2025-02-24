@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   User,
@@ -12,6 +12,8 @@ import {
   Save,
   Globe,
   CreditCard,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -32,13 +34,64 @@ const Settings = () => {
   });
 
   const [profileData, setProfileData] = useState({
-    shopName: "LUK corp",
-    email: "diluk@gmail.com",
-    address: "No.122, Kawudella",
+    shopName: "",
+    email: "",
+    address: "",
+    phone: "",
     password: "",
     newPassword: "",
     confirmPassword: "",
   });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(() => {
+    const fetchShopDetails = async () => {
+      const token = localStorage.getItem("token");
+
+      if (token) {
+        const decodedToken = JSON.parse(atob(token.split(".")[1]));
+        if (decodedToken) {
+          try {
+            const shopResponse = await fetch(
+              `https://closecart-backend.vercel.app/api/v1/shops/${decodedToken.shopId}`,
+              {
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            const shop = await shopResponse.json();
+            console.log(shop);
+            setProfileData((prev) => ({
+              ...prev,
+              shopName: shop.data.name || "",
+              address: shop.data.address || "",
+              password: "",
+              newPassword: "",
+              confirmPassword: "",
+            }));
+          } catch (error) {
+            console.error("Error fetching shop details:", error);
+          }
+        }
+        console.log("decodedToken: ", JSON.stringify(decodedToken, null, 2));
+        setProfileData((prev) => ({
+          ...prev,
+          email: decodedToken.email || "",
+          phone: decodedToken.phone || "",
+          password: "",
+          newPassword: "",
+          confirmPassword: "",
+        }));
+      }
+    };
+
+    fetchShopDetails();
+  }, []);
 
   const handleNotificationChange = (key) => {
     setSettings((prev) => ({
@@ -71,7 +124,7 @@ const Settings = () => {
   };
 
   const SettingsSection = ({ title, icon: Icon, children }) => (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm">
       <div className="flex items-center gap-2 mb-6">
         <Icon className="w-5 h-5 text-yellow-500" />
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -140,47 +193,86 @@ const Settings = () => {
                 className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Contact Number
+              </label>
+              <input
+                type="text"
+                name="contactNumber"
+                value={profileData.phone}
+                onChange={handleProfileChange}
+                className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              />
+            </div>
           </div>
         </SettingsSection>
 
         {/* Security Settings */}
         <SettingsSection title="Security" icon={Shield}>
           <div className="space-y-4">
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Current Password
               </label>
-              <input
-                type="password"
-                name="password"
-                value={profileData.password}
-                onChange={handleProfileChange}
-                className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={profileData.password}
+                  onChange={handleProfileChange}
+                  className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                >
+                  {showPassword ? <EyeOff /> : <Eye />}
+                </button>
+              </div>
             </div>
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 New Password
               </label>
-              <input
-                type="password"
-                name="newPassword"
-                value={profileData.newPassword}
-                onChange={handleProfileChange}
-                className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-              />
+              <div className="relative">
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  name="newPassword"
+                  value={profileData.newPassword}
+                  onChange={handleProfileChange}
+                  className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                >
+                  {showNewPassword ? <EyeOff /> : <Eye />}
+                </button>
+              </div>
             </div>
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Confirm New Password
               </label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={profileData.confirmPassword}
-                onChange={handleProfileChange}
-                className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-              />
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  value={profileData.confirmPassword}
+                  onChange={handleProfileChange}
+                  className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                >
+                  {showConfirmPassword ? <EyeOff /> : <Eye />}
+                </button>
+              </div>
             </div>
           </div>
         </SettingsSection>
@@ -195,13 +287,13 @@ const Settings = () => {
                 </span>
                 <button
                   onClick={() => handleNotificationChange(key)}
-                  className={`w-12 h-6 rounded-full transition-colors ${
-                    value ? "bg-yellow-500" : "bg-gray-300 dark:bg-gray-600"
+                  className={`relative inline-flex h-1 w-15 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 ${
+                    value ? "bg-yellow-500" : "bg-gray-200 dark:bg-gray-600"
                   }`}
                 >
                   <motion.div
-                    animate={{ x: value ? 24 : 0 }}
-                    className="w-6 h-6 rounded-full bg-white shadow-sm"
+                    animate={{ x: value ? 20 : -20 }}
+                    className="w-8 h-8 rounded-full bg-white shadow-sm"
                   />
                 </button>
               </div>

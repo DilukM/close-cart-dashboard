@@ -1,7 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, Lock, Store, MapPin, Loader2, ArrowRight } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  Store,
+  MapPin,
+  Loader2,
+  ArrowRight,
+  Phone,
+} from "lucide-react";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,6 +20,7 @@ const AuthPage = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    phone: "",
     shopName: "",
     shopAddress: "",
   });
@@ -20,11 +29,12 @@ const AuthPage = () => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    console.log(formData);
 
     try {
-      const endpoint = isLogin ? 
-        "https://closecart-backend.vercel.app/api/v1/auth/login" :
-        "https://closecart-backend.vercel.app/api/v1/auth/register";
+      const endpoint = isLogin
+        ? "https://closecart-backend.vercel.app/api/v1/auth/login"
+        : "https://closecart-backend.vercel.app/api/v1/auth/register";
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -124,6 +134,24 @@ const AuthPage = () => {
 
             {!isLogin && (
               <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                    Contact Number
+                  </label>
+                  <div className="mt-1 relative">
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      type="number"
+                      name="phone"
+                      required
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors duration-200"
+                      placeholder="Your Contact Number"
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                     Shop Name
