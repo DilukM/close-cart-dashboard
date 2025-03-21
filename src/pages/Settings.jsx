@@ -4,7 +4,8 @@ import SettingsLayout from "./Settings/SettingsLayout";
 import ProfileSettings from "./Settings/ProfileSettings";
 import SecuritySettings from "./Settings/SecuritySettings";
 import NotificationSettings from "./Settings/NotificationSettings";
-import PreferenceSettings from "./Settings/PreferenceSettings";
+import HelpAndSupportSettings from "./Settings/PreferenceSettings";
+import OfferPreferences from "./Settings/OfferPreferences";
 
 const Settings = () => {
   return (
@@ -14,7 +15,8 @@ const Settings = () => {
         <Route path="profile" element={<ProfileSettings />} />
         <Route path="security" element={<SecuritySettings />} />
         <Route path="notifications" element={<NotificationSettings />} />
-        <Route path="preferences" element={<PreferenceSettings />} />
+        <Route path="offers" element={<OfferPreferences />} />
+        <Route path="preferences" element={<HelpAndSupportSettings />} />
       </Route>
     </Routes>
   );

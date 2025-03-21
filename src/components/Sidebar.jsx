@@ -11,6 +11,8 @@ import {
   Shield,
   Bell,
   Palette,
+  LifeBuoy,
+  Tag,
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -29,7 +31,8 @@ const Sidebar = () => {
     { name: "Profile", path: "/settings/profile", icon: Store },
     { name: "Security", path: "/settings/security", icon: Shield },
     { name: "Notifications", path: "/settings/notifications", icon: Bell },
-    { name: "Preferences", path: "/settings/preferences", icon: Palette },
+    { name: "Offer Preferences", path: "/settings/offers", icon: Tag },
+    { name: "Help & Support", path: "/settings/preferences", icon: LifeBuoy },
   ];
 
   // Handle settings menu click
@@ -38,13 +41,13 @@ const Sidebar = () => {
     if (!settingsOpen) {
       setSettingsOpen(true);
       // Only navigate if we're not already on a settings page
-      if (!location.pathname.includes('/settings')) {
-        navigate('/settings/profile');
+      if (!location.pathname.includes("/settings")) {
+        navigate("/settings/profile");
       }
-    } 
+    }
     // If already open and we're on the main settings path, navigate to first tab
-    else if (location.pathname === '/settings') {
-      navigate('/settings/profile');
+    else if (location.pathname === "/settings") {
+      navigate("/settings/profile");
     }
     // Otherwise just toggle the dropdown
     else {
@@ -54,7 +57,7 @@ const Sidebar = () => {
 
   // Watch location changes to keep settings open when on settings pages
   useEffect(() => {
-    if (location.pathname.includes('/settings') && !settingsOpen) {
+    if (location.pathname.includes("/settings") && !settingsOpen) {
       setSettingsOpen(true);
     }
   }, [location.pathname]);
