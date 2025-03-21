@@ -1,6 +1,7 @@
 import React from "react";
 import Navbar from "./NavBar";
 import Sidebar from "./Sidebar";
+import { Outlet } from "react-router-dom";
 
 const Layout = ({ children, toggleTheme, isDarkMode }) => {
   return (
@@ -20,6 +21,7 @@ const Layout = ({ children, toggleTheme, isDarkMode }) => {
         {/* Content Pages */}
         <main className="flex-1 ml-64 p-4 overflow-y-auto bg-gray-300 dark:bg-gray-800">
           {children}
+          <Outlet />
         </main>
       </div>
     </div>

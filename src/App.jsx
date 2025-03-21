@@ -87,44 +87,19 @@ function App() {
               element={<AuthPage setIsAuthenticated={setIsAuthenticated} />}
             />
 
-            {/* Protected Routes */}
+            {/* Protected Routes with Layout */}
             <Route
               path="/"
               element={
                 <ProtectedRoute>
-                  <Layout toggleTheme={toggleTheme} isDarkMode={isDarkMode}>
-                    <Routes>
-                      <Route index element={<Dashboard />} />
-                      <Route path="offers" element={<Offers />} />
-                      <Route path="settings" element={<Settings />} />
-                    </Routes>
-                  </Layout>
+                  <Layout toggleTheme={toggleTheme} isDarkMode={isDarkMode} />
                 </ProtectedRoute>
               }
-            />
-
-            {/* Protected Nested Routes */}
-            <Route
-              path="/offers"
-              element={
-                <ProtectedRoute>
-                  <Layout toggleTheme={toggleTheme} isDarkMode={isDarkMode}>
-                    <Offers />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute>
-                  <Layout toggleTheme={toggleTheme} isDarkMode={isDarkMode}>
-                    <Settings />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="offers" element={<Offers />} />
+              <Route path="settings/*" element={<Settings />} />
+            </Route>
 
             {/* Catch all route - redirect to dashboard if authenticated, otherwise to login */}
             <Route
