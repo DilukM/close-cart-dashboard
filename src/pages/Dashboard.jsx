@@ -51,26 +51,28 @@ const Dashboard = () => {
   ];
 
   const StatCard = ({ title, value, change, icon: Icon, trend }) => (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm">
+    <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-sm">
       <div className="flex justify-between items-start">
-        <div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
-          <h3 className="text-2xl font-bold mt-2 text-gray-900 dark:text-white">
+        <div className="pr-2">
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+            {title}
+          </p>
+          <h3 className="text-xl sm:text-2xl font-bold mt-1 sm:mt-2 text-gray-900 dark:text-white">
             {value}
           </h3>
         </div>
-        <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl">
-          <Icon className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+        <div className="p-2 sm:p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex-shrink-0">
+          <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600 dark:text-yellow-400" />
         </div>
       </div>
-      <div className="flex items-center mt-4">
+      <div className="flex items-center mt-2 sm:mt-4">
         {trend === "up" ? (
-          <ArrowUp className="w-4 h-4 text-green-500" />
+          <ArrowUp className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
         ) : (
-          <ArrowDown className="w-4 h-4 text-red-500" />
+          <ArrowDown className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />
         )}
         <span
-          className={`ml-1 text-sm ${
+          className={`ml-1 text-xs sm:text-sm ${
             trend === "up" ? "text-green-500" : "text-red-500"
           }`}
         >
@@ -81,19 +83,19 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+    <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
           Dashboard
         </h1>
-        <button className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl flex items-center gap-2 transition-colors">
-          <Activity className="w-4 h-4" />
+        <button className="px-3 py-1.5 sm:px-4 sm:py-2 w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl flex items-center justify-center sm:justify-start gap-2 transition-colors text-sm sm:text-base">
+          <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           Generate Report
         </button>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         <StatCard
           title="Total Revenue"
           value="$28,450"
@@ -125,15 +127,18 @@ const Dashboard = () => {
       </div>
 
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Revenue Chart */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+        <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-sm">
+          <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-white">
             Revenue Overview
           </h3>
-          <div className="h-80">
+          <div className="h-60 sm:h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={revenueData}>
+              <AreaChart
+                data={revenueData}
+                margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+              >
                 <defs>
                   <linearGradient
                     id="revenueGradient"
@@ -147,8 +152,8 @@ const Dashboard = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Area
                   type="monotone"
@@ -163,16 +168,19 @@ const Dashboard = () => {
         </div>
 
         {/* Sales Chart */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+        <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-sm">
+          <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-white">
             Daily Sales
           </h3>
-          <div className="h-80">
+          <div className="h-60 sm:h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={salesData}>
+              <BarChart
+                data={salesData}
+                margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Bar dataKey="sales" fill="#EAB308" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -181,16 +189,19 @@ const Dashboard = () => {
         </div>
 
         {/* Visitors Chart */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm lg:col-span-2">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+        <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-sm lg:col-span-2">
+          <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-white">
             Visitor Trends
           </h3>
-          <div className="h-80">
+          <div className="h-60 sm:h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={visitorData}>
+              <LineChart
+                data={visitorData}
+                margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
+                <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Line
                   type="monotone"

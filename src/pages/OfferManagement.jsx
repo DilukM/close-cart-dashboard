@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, Edit2, Trash2 } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, Loader } from "lucide-react";
 import CreateModal from "../components/CreateOfferModel";
 import Modal from "../components/Model";
 
@@ -22,9 +22,9 @@ const OfferManagement = () => {
     endDate: "",
     imageUrl: "",
     category: "",
-    tags: [], // Add this for storing multiple tags
-    minPurchase: "", // Optional min purchase amount
+    tags: [],
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchOffers = async () => {
     try {
@@ -54,9 +54,7 @@ const OfferManagement = () => {
       const offersArray = data.data || data;
 
       setOffers(offersArray);
-      console.log("Offers fetched:", offersArray);
     } catch (error) {
-      console.error("Error fetching offers:", error);
       setError(error.message);
     } finally {
       setIsLoading(false);
@@ -69,6 +67,7 @@ const OfferManagement = () => {
 
   const handleCreate = async () => {
     console.log("Creating offer:", formData);
+    setIsSubmitting(true);
     try {
       setError(null);
       const response = await fetch(
@@ -93,10 +92,13 @@ const OfferManagement = () => {
     } catch (error) {
       console.error("Error creating offer:", error);
       setError(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleUpdate = async () => {
+    setIsSubmitting(true);
     try {
       await fetch(
         `https://closecart-backend.vercel.app/api/v1/offers/${selectedOffer._id}`,
@@ -109,16 +111,20 @@ const OfferManagement = () => {
           body: JSON.stringify(formData),
         }
       );
-      fetchOffers();
+      await fetchOffers();
       setIsDetailModalOpen(false);
       setIsEditMode(false);
       resetForm();
     } catch (error) {
       console.error("Error updating offer:", error);
+      setError(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id) => {
+    setIsSubmitting(true);
     try {
       await fetch(`https://closecart-backend.vercel.app/api/v1/offers/${id}`, {
         method: "DELETE",
@@ -126,10 +132,13 @@ const OfferManagement = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      fetchOffers();
+      await fetchOffers();
       setIsDetailModalOpen(false);
     } catch (error) {
       console.error("Error deleting offer:", error);
+      setError(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -172,7 +181,7 @@ const OfferManagement = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen p-8 flex items-center justify-center">
+      <div className="min-h-screen p-4 sm:p-8 flex items-center justify-center">
         <div className="text-yellow-500 text-xl">Loading offers...</div>
       </div>
     );
@@ -180,28 +189,28 @@ const OfferManagement = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen  p-8 flex items-center justify-center">
+      <div className="min-h-screen p-4 sm:p-8 flex items-center justify-center">
         <div className="text-red-500 text-xl">Error: {error}</div>
       </div>
     );
   }
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-4 sm:p-8">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
           Offer Management
         </h1>
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black rounded-lg flex items-center gap-2 transition-all duration-300"
+          className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all duration-300"
         >
           <Plus size={20} /> Create Offer
         </button>
       </div>
 
       {/* Search and Filter */}
-      <div className="flex gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row gap-4 mb-6 sm:mb-8">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <input
@@ -214,7 +223,7 @@ const OfferManagement = () => {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          className="w-48 px-4 py-2 bg-gray-200 dark:bg-gray-900 border border-white dark:border-gray-700 rounded-lg text-grey-800 dark:text-white focus:outline-none focus:border-yellow-500"
+          className="w-full sm:w-48 px-4 py-2 bg-gray-200 dark:bg-gray-900 border border-white dark:border-gray-700 rounded-lg text-grey-800 dark:text-white focus:outline-none focus:border-yellow-500"
         >
           <option value="newest">Newest First</option>
           <option value="highest">Highest Discount</option>
@@ -224,7 +233,7 @@ const OfferManagement = () => {
 
       {/* Offer Cards */}
       <motion.div
-        className="grid grid-cols-1  md:grid-cols-2 lg:grid-cols-4 gap-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"
         layout
       >
         <AnimatePresence>
@@ -247,21 +256,25 @@ const OfferManagement = () => {
                 <img
                   src={offer.imageUrl}
                   alt={offer.title}
-                  className="w-full h-50 object-cover rounded-lg shadow-md"
+                  className="w-full h-40 sm:h-50 object-cover rounded-t-lg shadow-md"
                 />
-                <div className="p-6 transition-all duration-300 relative overflow-hidden group">
-                  <h3 className="text-xl font-semibold text-yellow-500 mb-2">
+                <div className="p-4 sm:p-6 transition-all duration-300 relative overflow-hidden group">
+                  <h3 className="text-lg sm:text-xl font-semibold text-yellow-500 mb-2">
                     {offer.title}
                   </h3>
-                  <p className="dark:text-gray-400 text-gray-700 mb-4">
+                  <p className="dark:text-gray-400 text-gray-700 mb-2 sm:mb-4">
                     {offer.discount}% OFF
                   </p>
-                  <p className="dark:text-gray-300 text-gray-800 line-clamp-2">
+                  <p className="dark:text-gray-300 text-gray-800 line-clamp-2 text-sm sm:text-base">
                     {offer.description}
                   </p>
-                  <p className="dark:text-gray-300 text-gray-800 line-clamp-2">
-                    From:{formatDate(offer.startDate)} To:
-                    {formatDate(offer.endDate)}
+                  <p className="dark:text-gray-300 text-gray-800 line-clamp-2 text-sm sm:text-base mt-2">
+                    <span className="block sm:inline">
+                      From: {formatDate(offer.startDate)}
+                    </span>{" "}
+                    <span className="block sm:inline">
+                      To: {formatDate(offer.endDate)}
+                    </span>
                   </p>
 
                   <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/0 to-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -273,99 +286,61 @@ const OfferManagement = () => {
       </motion.div>
 
       {/* Create Modal */}
-      <CreateModal
+      <Modal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        formData={formData}
-        setFormData={setFormData}
-        handleCreate={handleCreate}
-      />
+        onClose={() => {
+          if (!isSubmitting) {
+            setIsCreateModalOpen(false);
+            resetForm();
+          }
+        }}
+      >
+        <CreateModal
+          onClose={() => {
+            if (!isSubmitting) {
+              setIsCreateModalOpen(false);
+              resetForm();
+            }
+          }}
+          formData={formData}
+          setFormData={setFormData}
+          handleSubmit={handleCreate}
+          isEditMode={false}
+          isSubmitting={isSubmitting}
+        />
+      </Modal>
 
+      {/* Detail & Edit Modal */}
       <Modal
         details={offers}
         isOpen={isDetailModalOpen}
         onClose={() => {
-          setIsDetailModalOpen(false);
-          setIsEditMode(false);
-          resetForm();
+          if (!isSubmitting) {
+            setIsDetailModalOpen(false);
+            setIsEditMode(false);
+            resetForm();
+          }
         }}
       >
         {isEditMode ? (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold mb-4">Edit Offer</h2>
-            <input
-              placeholder="Offer Title"
-              className="w-full px-4 py-2  bg-gray-100 dark:bg-gray-700 border dark:border-gray-600 border-gray-100 rounded-lg  focus:outline-none focus:border-yellow-500"
-              value={formData.title}
-              onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
+          <CreateModal
+            onClose={() => {
+              if (!isSubmitting) {
+                setIsEditMode(false);
+                setIsDetailModalOpen(false);
+                resetForm();
               }
-            />
-            <input
-              placeholder="Description"
-              className="w-full px-4 py-2  bg-gray-100 dark:bg-gray-700 border dark:border-gray-600 border-gray-100 rounded-lg  focus:outline-none focus:border-yellow-500"
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-            />
-            <input
-              placeholder="Image Url"
-              className="w-full px-4 py-2  bg-gray-100 dark:bg-gray-700 border dark:border-gray-600 border-gray-100 rounded-lg  focus:outline-none focus:border-yellow-500"
-              value={formData.imageUrl}
-              onChange={(e) =>
-                setFormData({ ...formData, imageUrl: e.target.value })
-              }
-            />
-            <input
-              type="number"
-              placeholder="Discount Percentage"
-              className="w-full px-4 py-2  bg-gray-100 dark:bg-gray-700 border dark:border-gray-600 border-gray-100 rounded-lg  focus:outline-none focus:border-yellow-500"
-              value={formData.discount}
-              onChange={(e) =>
-                setFormData({ ...formData, discount: e.target.value })
-              }
-            />
-            <input
-              type="date"
-              placeholder="Start Date"
-              className="w-full px-4 py-2  bg-gray-100 dark:bg-gray-700 border dark:border-gray-600 border-gray-100 rounded-lg  focus:outline-none focus:border-yellow-500"
-              value={formData.startDate ? formData.startDate.split("T")[0] : ""}
-              onChange={(e) =>
-                setFormData({ ...formData, startDate: e.target.value })
-              }
-            />
-            <input
-              type="date"
-              placeholder="End Date"
-              className="w-full px-4 py-2  bg-gray-100 dark:bg-gray-700 border dark:border-gray-600 border-gray-100 rounded-lg  focus:outline-none focus:border-yellow-500"
-              value={formData.endDate ? formData.endDate.split("T")[0] : ""}
-              onChange={(e) =>
-                setFormData({ ...formData, endDate: e.target.value })
-              }
-            />
-            <div className="flex justify-end gap-4 mt-6">
-              <button
-                className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors duration-300"
-                onClick={() => {
-                  setIsEditMode(false);
-                  resetForm();
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black rounded-lg transition-all duration-300"
-                onClick={handleUpdate}
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
+            }}
+            formData={formData}
+            setFormData={setFormData}
+            handleSubmit={handleUpdate}
+            isEditMode={true}
+            isSubmitting={isSubmitting}
+          />
         ) : (
-          <div className="flex flex-col md:flex-row items-start gap-6  ">
+          <div className="flex flex-col md:flex-row items-start gap-4 sm:gap-6">
             {/* Image Section */}
-            <div className="w-full md:w-1/2">
+            <div className="w-full md:w-1/2 mb-4 md:mb-0">
               <img
                 src={selectedOffer?.imageUrl}
                 alt={selectedOffer?.title}
@@ -374,46 +349,87 @@ const OfferManagement = () => {
             </div>
 
             {/* Offer Details Section */}
-            <div className="w-full md:w-2/3 flex flex-col h-full">
-              <div className="flex-grow space-y-4">
-                <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-3 border-b border-yellow-400 pb-2">
+            <div className="w-full md:w-1/2 flex flex-col h-full">
+              <div className="flex-grow space-y-3 sm:space-y-4">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-2 sm:mb-3 border-b border-yellow-400 pb-2">
                   {selectedOffer?.title}
                 </h2>
-                <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
+                <p className="text-gray-700 dark:text-gray-300 text-base sm:text-lg leading-relaxed">
                   {selectedOffer?.description}
                 </p>
 
+                {/* Display tags if available */}
+                {selectedOffer?.tags && selectedOffer.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedOffer.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="bg-yellow-500/30 text-yellow-300 text-xs sm:text-sm rounded-full px-2 sm:px-3 py-1"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
                 {/* Discount and Date */}
-                <div className="mt-4 bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-                  <p className="text-gray-900 dark:text-yellow-400 text-xl font-bold flex items-center gap-2">
+                <div className="mt-3 sm:mt-4 bg-gray-100 dark:bg-gray-800 p-3 sm:p-4 rounded-lg">
+                  <p className="text-gray-900 dark:text-yellow-400 text-lg sm:text-xl font-bold flex items-center gap-2">
                     <span className="bg-yellow-500 text-gray-900 dark:text-white px-2 py-1 rounded">
                       {selectedOffer?.discount}%
                     </span>
                     <span>Discount</span>
                   </p>
-                  <p className="text-gray-700 dark:text-gray-300 mt-2 font-medium">
+                  {selectedOffer?.minPurchase > 0 && (
+                    <p className="text-gray-700 dark:text-gray-300 mt-2 text-sm sm:text-base">
+                      Minimum purchase: ${selectedOffer.minPurchase}
+                    </p>
+                  )}
+                  <p className="text-gray-700 dark:text-gray-300 mt-2 font-medium text-sm sm:text-base">
                     {formatDate(selectedOffer?.startDate)} -{" "}
                     {formatDate(selectedOffer?.endDate)}
                   </p>
                 </div>
+
+                {/* Category if available */}
+                {selectedOffer?.category && (
+                  <div className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">
+                    <span className="font-medium">Category: </span>
+                    {selectedOffer.category}
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-end gap-4 mt-auto pt-6">
+              <div className="flex justify-center sm:justify-end gap-3 sm:gap-4 mt-4 sm:mt-auto pt-4 sm:pt-6">
                 <button
-                  className="px-5 py-2 flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 dark:text-white rounded-lg transition-colors duration-300 font-medium shadow-md"
+                  className="flex-1 sm:flex-none px-4 sm:px-5 py-2 flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 dark:text-white rounded-lg transition-colors duration-300 font-medium shadow-md"
                   onClick={() => {
-                    setFormData(selectedOffer);
+                    setFormData({
+                      ...selectedOffer,
+                      tags: selectedOffer.tags || [],
+                    });
                     setIsEditMode(true);
                   }}
+                  disabled={isSubmitting}
                 >
                   <Edit2 size={16} /> Edit
                 </button>
                 <button
-                  className="px-5 py-2 flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-300 font-medium shadow-md"
+                  className="flex-1 sm:flex-none px-4 sm:px-5 py-2 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-300 font-medium shadow-md"
                   onClick={() => handleDelete(selectedOffer?._id)}
+                  disabled={isSubmitting}
                 >
-                  <Trash2 size={16} /> Delete
+                  {isSubmitting ? (
+                    <>
+                      <Loader size={16} className="animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 size={16} /> Delete
+                    </>
+                  )}
                 </button>
               </div>
             </div>

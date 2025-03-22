@@ -252,7 +252,7 @@ const OfferPreferences = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-2 sm:px-0">
       <h2 className="text-xl font-bold text-gray-900 dark:text-white">
         Offer Preferences
       </h2>
@@ -288,17 +288,17 @@ const OfferPreferences = () => {
             ))}
           </div>
 
-          <div className="flex">
+          <div className="flex flex-col sm:flex-row w-full">
             <input
               type="text"
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
               placeholder="Add new category"
-              className="flex-1 px-3 py-2 rounded-l-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="flex-1 px-3 py-2 rounded-lg sm:rounded-r-none border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white mb-2 sm:mb-0"
             />
             <button
               onClick={handleAddCategory}
-              className="px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-r-lg flex items-center"
+              className="px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg sm:rounded-l-none flex items-center justify-center sm:justify-start"
             >
               <Plus size={18} />
               <span className="ml-1">Add</span>
@@ -338,17 +338,17 @@ const OfferPreferences = () => {
             ))}
           </div>
 
-          <div className="flex">
+          <div className="flex flex-col sm:flex-row w-full">
             <input
               type="text"
               value={newTag}
               onChange={(e) => setNewTag(e.target.value)}
               placeholder="Add new tag"
-              className="flex-1 px-3 py-2 rounded-l-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="flex-1 px-3 py-2 rounded-lg sm:rounded-r-none border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white mb-2 sm:mb-0"
             />
             <button
               onClick={handleAddTag}
-              className="px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-r-lg flex items-center"
+              className="px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg sm:rounded-l-none flex items-center justify-center sm:justify-start"
             >
               <Plus size={18} />
               <span className="ml-1">Add</span>
@@ -379,7 +379,7 @@ const OfferPreferences = () => {
                 onChange={handleInputChange}
                 min="1"
                 max="365"
-                className="w-24 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full sm:w-24 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
               <span className="ml-2 text-gray-600 dark:text-gray-400">
                 days
@@ -400,7 +400,7 @@ const OfferPreferences = () => {
                 onChange={handleInputChange}
                 min="0"
                 max="100"
-                className="w-24 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full sm:w-24 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
               <span className="ml-2 text-gray-600 dark:text-gray-400">%</span>
             </div>
@@ -419,7 +419,7 @@ const OfferPreferences = () => {
                 onChange={handleInputChange}
                 min="0"
                 step="0.01"
-                className="w-24 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full sm:w-24 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -438,7 +438,7 @@ const OfferPreferences = () => {
         disabled={!hasChanges.expiration}
       >
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
             <div>
               <h3 className="text-md font-medium text-gray-800 dark:text-gray-200">
                 Expiration Notifications
@@ -460,7 +460,7 @@ const OfferPreferences = () => {
           </div>
 
           {offerPreferences.notifyBeforeExpiration && (
-            <div className="ml-6">
+            <div className="ml-0 sm:ml-6">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Notify Days Before Expiration
               </label>
@@ -471,13 +471,13 @@ const OfferPreferences = () => {
                 onChange={handleInputChange}
                 min="1"
                 max="30"
-                className="w-24 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full sm:w-24 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
           )}
 
           <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
               <div>
                 <h3 className="text-md font-medium text-gray-800 dark:text-gray-200">
                   Automatic Offer Renewal
@@ -508,7 +508,7 @@ const OfferPreferences = () => {
         </p>
 
         <div className="space-y-4">
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 text-center sm:text-left">
             <p className="text-sm text-yellow-800 dark:text-yellow-200">
               This is a premium feature. Upgrade your plan to create custom rule
               templates.

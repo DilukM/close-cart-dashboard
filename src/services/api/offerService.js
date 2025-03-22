@@ -80,3 +80,85 @@ export const createOffer = async (offerData) => {
 
   return apiRequest(`/shops/${shopId}/offers`, "POST", offerData);
 };
+
+/**
+ * Update an existing offer
+ */
+export const updateOffer = async (offerId, offerData) => {
+  const shopId = getCurrentShopId();
+  if (!shopId) {
+    throw new Error("Shop ID not found");
+  }
+
+  return apiRequest(`/shops/${shopId}/offers/${offerId}`, "PUT", offerData);
+};
+
+/**
+ * Delete an offer
+ */
+export const deleteOffer = async (offerId) => {
+  const shopId = getCurrentShopId();
+  if (!shopId) {
+    throw new Error("Shop ID not found");
+  }
+
+  return apiRequest(`/shops/${shopId}/offers/${offerId}`, "DELETE");
+};
+
+/**
+ * Create a new offer with loading state management
+ */
+export const createOfferWithLoading = async (offerData, setIsLoading) => {
+  const shopId = getCurrentShopId();
+  if (!shopId) {
+    throw new Error("Shop ID not found");
+  }
+
+  setIsLoading(true);
+  try {
+    const response = await apiRequest(`/offers`, "POST", offerData);
+    return response;
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+/**
+ * Update an existing offer with loading state management
+ */
+export const updateOfferWithLoading = async (
+  offerId,
+  offerData,
+  setIsLoading
+) => {
+  const shopId = getCurrentShopId();
+  if (!shopId) {
+    throw new Error("Shop ID not found");
+  }
+
+  setIsLoading(true);
+  try {
+    const response = await apiRequest(`/offers/${offerId}`, "PUT", offerData);
+    return response;
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+/**
+ * Delete an offer with loading state management
+ */
+export const deleteOfferWithLoading = async (offerId, setIsLoading) => {
+  const shopId = getCurrentShopId();
+  if (!shopId) {
+    throw new Error("Shop ID not found");
+  }
+
+  setIsLoading(true);
+  try {
+    const response = await apiRequest(`/offers/${offerId}`, "DELETE");
+    return response;
+  } finally {
+    setIsLoading(false);
+  }
+};

@@ -39,9 +39,15 @@ export const updateShopLocation = async (locationData) => {
 
   // Convert location to GeoJSON format if provided
   const shopData = {
-    longitude: locationData.location?.lng,
-    latitude: locationData.location?.lat,
+    address: locationData.address,
   };
+
+  if (locationData.location) {
+    shopData.location = {
+      type: "Point",
+      coordinates: [locationData.location.lng, locationData.location.lat],
+    };
+  }
 
   return apiRequest(`/shops/${shopId}/location`, "PUT", shopData);
 };

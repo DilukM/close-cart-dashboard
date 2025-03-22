@@ -269,7 +269,7 @@ const SecuritySettings = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-2 sm:px-0">
       <h2 className="text-xl font-bold text-gray-900 dark:text-white">
         Security & Privacy Settings
       </h2>
@@ -293,14 +293,14 @@ const SecuritySettings = () => {
                 name="password"
                 value={passwordData.password}
                 onChange={handlePasswordChange}
-                className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                className="w-full px-3 sm:px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm sm:text-base"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </div>
@@ -315,14 +315,14 @@ const SecuritySettings = () => {
                 name="newPassword"
                 value={passwordData.newPassword}
                 onChange={handlePasswordChange}
-                className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                className="w-full px-3 sm:px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm sm:text-base"
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
               >
-                {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </div>
@@ -337,14 +337,14 @@ const SecuritySettings = () => {
                 name="confirmPassword"
                 value={passwordData.confirmPassword}
                 onChange={handlePasswordChange}
-                className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                className="w-full px-3 sm:px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm sm:text-base"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
               >
-                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </div>
@@ -360,7 +360,7 @@ const SecuritySettings = () => {
         disabled={!hasChanges.twoFactor}
       >
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <div>
               <h3 className="text-md font-medium text-gray-900 dark:text-white">
                 Enable 2FA
@@ -406,14 +406,14 @@ const SecuritySettings = () => {
             <h3 className="text-md font-medium text-gray-900 dark:text-white mb-3">
               Add Employee
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 gap-3">
               <input
                 type="text"
                 name="name"
                 value={newEmployee.name}
                 onChange={handleEmployeeChange}
                 placeholder="Full Name"
-                className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
               />
               <input
                 type="email"
@@ -421,14 +421,14 @@ const SecuritySettings = () => {
                 value={newEmployee.email}
                 onChange={handleEmployeeChange}
                 placeholder="Email Address"
-                className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
               />
               <div className="flex items-center gap-2">
                 <select
                   name="role"
                   value={newEmployee.role}
                   onChange={handleEmployeeChange}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                 >
                   <option value="admin">Admin</option>
                   <option value="manager">Manager</option>
@@ -436,7 +436,7 @@ const SecuritySettings = () => {
                 </select>
                 <button
                   onClick={handleAddEmployee}
-                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors"
+                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors text-sm sm:text-base whitespace-nowrap"
                 >
                   Add
                 </button>
@@ -448,53 +448,123 @@ const SecuritySettings = () => {
             <h3 className="text-md font-medium text-gray-900 dark:text-white mb-3">
               Manage Employees
             </h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="text-xs uppercase text-gray-700 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                  <tr>
-                    <th className="px-3 py-3">Name</th>
-                    <th className="px-3 py-3">Email</th>
-                    <th className="px-3 py-3">Role</th>
-                    <th className="px-3 py-3">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {employees.map((employee) => (
-                    <tr
-                      key={employee.id}
-                      className="border-b border-gray-200 dark:border-gray-700"
-                    >
-                      <td className="px-3 py-3 text-gray-900 dark:text-white">
-                        {employee.name}
-                      </td>
-                      <td className="px-3 py-3 text-gray-900 dark:text-white">
-                        {employee.email}
-                      </td>
-                      <td className="px-3 py-3">
-                        <select
-                          value={employee.role}
-                          onChange={(e) =>
-                            handleRoleChange(employee.id, e.target.value)
-                          }
-                          className="px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-                        >
-                          <option value="admin">Admin</option>
-                          <option value="manager">Manager</option>
-                          <option value="staff">Staff</option>
-                        </select>
-                      </td>
-                      <td className="px-3 py-3">
-                        <button
-                          onClick={() => handleRemoveEmployee(employee.id)}
-                          className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded"
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            {/* Desktop Table View */}
+            <div className="hidden sm:block overflow-x-auto -mx-4 sm:mx-0">
+              <div className="inline-block min-w-full px-4 sm:px-0 align-middle">
+                <div className="overflow-hidden border border-gray-200 dark:border-gray-700 sm:rounded-lg">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-800">
+                      <tr>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Email
+                        </th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Role
+                        </th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
+                      {employees.map((employee) => (
+                        <tr key={employee.id}>
+                          <td className="px-3 py-3 text-sm text-gray-900 dark:text-white">
+                            {employee.name}
+                          </td>
+                          <td className="px-3 py-3 text-sm text-gray-900 dark:text-white truncate max-w-[150px]">
+                            {employee.email}
+                          </td>
+                          <td className="px-3 py-3">
+                            <select
+                              value={employee.role}
+                              onChange={(e) =>
+                                handleRoleChange(employee.id, e.target.value)
+                              }
+                              className="px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs sm:text-sm"
+                            >
+                              <option value="admin">Admin</option>
+                              <option value="manager">Manager</option>
+                              <option value="staff">Staff</option>
+                            </select>
+                          </td>
+                          <td className="px-3 py-3">
+                            <button
+                              onClick={() => handleRemoveEmployee(employee.id)}
+                              className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded"
+                            >
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="sm:hidden space-y-4">
+              {employees.map((employee) => (
+                <div
+                  key={employee.id}
+                  className="bg-white dark:bg-gray-700 rounded-lg overflow-hidden shadow-sm border border-gray-200 dark:border-gray-600"
+                >
+                  <div className="p-4">
+                    <div className="flex flex-col space-y-2">
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                          Name
+                        </span>
+                        <p className="text-gray-900 dark:text-white text-sm">
+                          {employee.name}
+                        </p>
+                      </div>
+
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                          Email
+                        </span>
+                        <p className="text-gray-900 dark:text-white text-sm break-all">
+                          {employee.email}
+                        </p>
+                      </div>
+
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                          Role
+                        </span>
+                        <div className="mt-1">
+                          <select
+                            value={employee.role}
+                            onChange={(e) =>
+                              handleRoleChange(employee.id, e.target.value)
+                            }
+                            className="w-full px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                          >
+                            <option value="admin">Admin</option>
+                            <option value="manager">Manager</option>
+                            <option value="staff">Staff</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-600">
+                      <button
+                        onClick={() => handleRemoveEmployee(employee.id)}
+                        className="w-full px-3 py-2 bg-red-500 hover:bg-red-600 text-white text-sm rounded-md"
+                      >
+                        Remove Employee
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -503,7 +573,7 @@ const SecuritySettings = () => {
       {/* Data Privacy */}
       <SettingsSection title="Data Privacy" icon={Shield}>
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg gap-3">
             <div>
               <h3 className="text-md font-medium text-gray-900 dark:text-white">
                 Download Your Data
@@ -515,7 +585,7 @@ const SecuritySettings = () => {
             </div>
             <button
               onClick={handleDownloadData}
-              className="flex items-center gap-1 px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors"
+              className="flex items-center justify-center gap-1 px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors text-sm sm:text-base"
             >
               <FileDown size={16} />
               <span>Download</span>
@@ -534,7 +604,7 @@ const SecuritySettings = () => {
             {!showConfirmDeleteDialog ? (
               <button
                 onClick={handleInitiateAccountDeletion}
-                className="mt-2 flex items-center gap-1 px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                className="mt-2 flex items-center gap-1 px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm sm:text-base"
               >
                 <Trash2 size={16} />
                 <span>Delete Account</span>
@@ -548,14 +618,14 @@ const SecuritySettings = () => {
                   type="text"
                   value={deleteConfirmText}
                   onChange={(e) => setDeleteConfirmText(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-red-300 dark:border-red-600 bg-white dark:bg-gray-700 text-red-900 dark:text-white w-full"
+                  className="px-3 py-2 rounded-lg border border-red-300 dark:border-red-600 bg-white dark:bg-gray-700 text-red-900 dark:text-white w-full text-sm sm:text-base"
                   placeholder="Type DELETE"
                 />
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                   <button
                     onClick={handleConfirmAccountDeletion}
                     disabled={deleteConfirmText !== "DELETE"}
-                    className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                   >
                     Confirm Deletion
                   </button>
@@ -564,7 +634,7 @@ const SecuritySettings = () => {
                       setShowConfirmDeleteDialog(false);
                       setDeleteConfirmText("");
                     }}
-                    className="px-3 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
+                    className="w-full sm:w-auto px-3 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-sm sm:text-base"
                   >
                     Cancel
                   </button>
