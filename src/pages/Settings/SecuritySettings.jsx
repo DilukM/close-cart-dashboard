@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Shield,
   Eye,
   EyeOff,
-  Save,
   Users,
   FileDown,
   Trash2,
@@ -12,34 +11,84 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import SettingsSection from "../../components/settings/SettingsSection";
-import SaveButton from "../../components/settings/SaveButton";
 
 const SecuritySettings = () => {
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const [passwordData, setPasswordData] = useState({
+  // Initial state to track if there are password changes
+  const [initialPasswordData, setInitialPasswordData] = useState({
     password: "",
     newPassword: "",
     confirmPassword: "",
   });
 
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [showConfirmDeleteDialog, setShowConfirmDeleteDialog] = useState(false);
-  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [employees, setEmployees] = useState([
+  const [passwordData, setPasswordData] = useState({ ...initialPasswordData });
+
+  // Initial 2FA state
+  const [initialTwoFactorEnabled, setInitialTwoFactorEnabled] = useState(false);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(
+    initialTwoFactorEnabled
+  );
+
+  // Initial employees data
+  const [initialEmployees, setInitialEmployees] = useState([
     { id: 1, name: "John Doe", email: "john@example.com", role: "manager" },
     { id: 2, name: "Jane Smith", email: "jane@example.com", role: "staff" },
   ]);
+
+  const [employees, setEmployees] = useState([...initialEmployees]);
+
+  const [showConfirmDeleteDialog, setShowConfirmDeleteDialog] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   const [newEmployee, setNewEmployee] = useState({
     name: "",
     email: "",
     role: "staff",
   });
+
+  // Track changes for each section
+  const [hasChanges, setHasChanges] = useState({
+    password: false,
+    twoFactor: false,
+    userPermissions: false,
+  });
+
+  const [loadingState, setLoadingState] = useState({
+    password: false,
+    twoFactor: false,
+    userPermissions: false,
+    dataPrivacy: false,
+  });
+
+  // Check for changes in password section
+  useEffect(() => {
+    const passwordChanged =
+      passwordData.password !== initialPasswordData.password ||
+      passwordData.newPassword !== initialPasswordData.newPassword ||
+      passwordData.confirmPassword !== initialPasswordData.confirmPassword;
+
+    const twoFactorChanged = initialTwoFactorEnabled !== twoFactorEnabled;
+
+    // Check if employees have changed (added, removed, or modified)
+    const employeesChanged =
+      JSON.stringify(initialEmployees) !== JSON.stringify(employees);
+
+    setHasChanges({
+      password: passwordChanged,
+      twoFactor: twoFactorChanged,
+      userPermissions: employeesChanged,
+    });
+  }, [
+    passwordData,
+    twoFactorEnabled,
+    employees,
+    initialPasswordData,
+    initialTwoFactorEnabled,
+    initialEmployees,
+  ]);
 
   const handlePasswordChange = (e) => {
     setPasswordData((prev) => ({
@@ -93,14 +142,6 @@ const SecuritySettings = () => {
     toast.success("Employee added successfully");
   };
 
-  const handleToggle2FA = () => {
-    // In a real app, this would involve QR codes and verification
-    setTwoFactorEnabled(!twoFactorEnabled);
-    toast.success(
-      `Two-factor authentication ${!twoFactorEnabled ? "enabled" : "disabled"}`
-    );
-  };
-
   const handleDownloadData = () => {
     // In a real app, this would trigger a data export
     toast.info(
@@ -126,6 +167,13 @@ const SecuritySettings = () => {
     setDeleteConfirmText("");
   };
 
+  const setLoading = (section, isLoading) => {
+    setLoadingState((prev) => ({
+      ...prev,
+      [section]: isLoading,
+    }));
+  };
+
   const handleSavePassword = async () => {
     // Password validation
     if (passwordData.newPassword !== passwordData.confirmPassword) {
@@ -138,7 +186,7 @@ const SecuritySettings = () => {
       return;
     }
 
-    setLoading(true);
+    setLoading("password", true);
     try {
       const token = localStorage.getItem("token");
 
@@ -165,6 +213,12 @@ const SecuritySettings = () => {
 
       if (data.success) {
         toast.success("Password changed successfully!");
+        setInitialPasswordData({
+          password: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+
         setPasswordData({
           password: "",
           newPassword: "",
@@ -177,21 +231,57 @@ const SecuritySettings = () => {
       console.error("Error changing password:", error);
       toast.error("Failed to change password");
     } finally {
-      setLoading(false);
+      setLoading("password", false);
+    }
+  };
+
+  const handleToggle2FA = async () => {
+    setLoading("twoFactor", true);
+    try {
+      // In a real app, this would involve QR codes and verification
+      await new Promise((resolve) => setTimeout(resolve, 800)); // Simulate API call
+      setInitialTwoFactorEnabled(!initialTwoFactorEnabled);
+      setTwoFactorEnabled(!twoFactorEnabled);
+      toast.success(
+        `Two-factor authentication ${
+          !twoFactorEnabled ? "enabled" : "disabled"
+        }`
+      );
+    } catch (error) {
+      toast.error("Failed to update 2FA settings");
+    } finally {
+      setLoading("twoFactor", false);
+    }
+  };
+
+  const handleSaveUserPermissions = async () => {
+    setLoading("userPermissions", true);
+    try {
+      // In a real app, this would save employee permissions to backend
+      await new Promise((resolve) => setTimeout(resolve, 800)); // Simulate API call
+      setInitialEmployees([...employees]);
+      toast.success("User permissions saved successfully!");
+    } catch (error) {
+      toast.error("Failed to save user permissions");
+    } finally {
+      setLoading("userPermissions", false);
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-          Security & Privacy Settings
-        </h2>
-        <SaveButton onClick={handleSavePassword} loading={loading} />
-      </div>
+      <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+        Security & Privacy Settings
+      </h2>
 
       {/* Change Password */}
-      <SettingsSection title="Change Password" icon={Lock}>
+      <SettingsSection
+        title="Change Password"
+        icon={Lock}
+        onSave={handleSavePassword}
+        loading={loadingState.password}
+        disabled={!hasChanges.password}
+      >
         <div className="space-y-4">
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -262,7 +352,13 @@ const SecuritySettings = () => {
       </SettingsSection>
 
       {/* Two-Factor Authentication */}
-      <SettingsSection title="Two-Factor Authentication" icon={ShieldIcon}>
+      <SettingsSection
+        title="Two-Factor Authentication"
+        icon={ShieldIcon}
+        onSave={handleToggle2FA}
+        loading={loadingState.twoFactor}
+        disabled={!hasChanges.twoFactor}
+      >
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
@@ -298,7 +394,13 @@ const SecuritySettings = () => {
       </SettingsSection>
 
       {/* User Permissions */}
-      <SettingsSection title="User Permissions" icon={Users}>
+      <SettingsSection
+        title="User Permissions"
+        icon={Users}
+        onSave={handleSaveUserPermissions}
+        loading={loadingState.userPermissions}
+        disabled={!hasChanges.userPermissions}
+      >
         <div className="space-y-6">
           <div>
             <h3 className="text-md font-medium text-gray-900 dark:text-white mb-3">

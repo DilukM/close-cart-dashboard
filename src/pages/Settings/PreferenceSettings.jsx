@@ -13,13 +13,29 @@ import SettingsSection from "../../components/settings/SettingsSection";
 import SaveButton from "../../components/settings/SaveButton";
 
 const PreferenceSettings = () => {
-  const [loading, setLoading] = useState(false);
-  const [contactForm, setContactForm] = useState({
+  // Add initial state for contact form
+  const [initialContactForm, setInitialContactForm] = useState({
     subject: "",
     message: "",
     supportType: "general",
   });
+
+  const [loading, setLoading] = useState(false);
+  const [contactForm, setContactForm] = useState({ ...initialContactForm });
   const [selectedFaq, setSelectedFaq] = useState(null);
+
+  // Track if there are changes in the form
+  const [hasContactFormChanges, setHasContactFormChanges] = useState(false);
+
+  // Check for changes when form data changes
+  React.useEffect(() => {
+    const formChanged =
+      initialContactForm.subject !== contactForm.subject ||
+      initialContactForm.message !== contactForm.message ||
+      initialContactForm.supportType !== contactForm.supportType;
+
+    setHasContactFormChanges(formChanged);
+  }, [contactForm, initialContactForm]);
 
   const handleSubmitTicket = async (e) => {
     e.preventDefault();
@@ -33,11 +49,16 @@ const PreferenceSettings = () => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success("Support request submitted successfully!");
-      setContactForm({
+
+      // Reset form and update initial state
+      const newForm = {
         subject: "",
         message: "",
         supportType: "general",
-      });
+      };
+
+      setInitialContactForm(newForm);
+      setContactForm(newForm);
     } catch (error) {
       toast.error("Failed to submit support request");
     } finally {
@@ -294,6 +315,11 @@ const PreferenceSettings = () => {
                 onClick={null}
                 loading={loading}
                 text="Submit Ticket"
+                disabled={
+                  !hasContactFormChanges ||
+                  !contactForm.subject.trim() ||
+                  !contactForm.message.trim()
+                }
               />
             </div>
           </form>

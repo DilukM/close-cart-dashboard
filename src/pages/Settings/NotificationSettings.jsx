@@ -1,58 +1,136 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Bell,
-  Save,
   ShoppingBag,
   TrendingUp,
   MessageCircle,
   Mail,
-  Smartphone,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import SettingsSection from "../../components/settings/SettingsSection";
-import SaveButton from "../../components/settings/SaveButton";
 
 const NotificationSettings = () => {
-  const [loading, setLoading] = useState(false);
+  // Initial state that will be fetched from server
+  const [initialState, setInitialState] = useState({
+    notifications: {
+      newOrder: true,
+      orderUpdates: true,
+      orderCancellations: true,
+      lowEngagement: true,
+      budgetAlerts: true,
+      campaignEnding: false,
+      customerChat: true,
+      customerReviews: true,
+      marketingEmails: false,
+      pushNotifications: true,
+      promotionalAlerts: false,
+    },
+    notificationChannels: {
+      email: true,
+      push: true,
+      sms: false,
+    },
+    chatSettings: {
+      autoReply: true,
+      showOnlineStatus: true,
+      notifyWhenOffline: true,
+      quickReplies: [
+        "Thanks for your message!",
+        "We'll get back to you soon.",
+        "How can I help you today?",
+      ],
+    },
+  });
+
+  // Current state that user can modify
   const [notifications, setNotifications] = useState({
-    // Order notifications
-    newOrder: true,
-    orderUpdates: true,
-    orderCancellations: true,
-
-    // Ad performance
-    lowEngagement: true,
-    budgetAlerts: true,
-    campaignEnding: false,
-
-    // Customer messages
-    customerChat: true,
-    customerReviews: true,
-
-    // Marketing notifications
-    marketingEmails: false,
-    pushNotifications: true,
-    promotionalAlerts: false,
+    ...initialState.notifications,
   });
-
   const [notificationChannels, setNotificationChannels] = useState({
-    email: true,
-    push: true,
-    sms: false,
+    ...initialState.notificationChannels,
+  });
+  const [chatSettings, setChatSettings] = useState({
+    ...initialState.chatSettings,
   });
 
-  const [chatSettings, setChatSettings] = useState({
-    autoReply: true,
-    showOnlineStatus: true,
-    notifyWhenOffline: true,
-    quickReplies: [
-      "Thanks for your message!",
-      "We'll get back to you soon.",
-      "How can I help you today?",
-    ],
+  // Track changes for sections
+  const [hasChanges, setHasChanges] = useState({
+    channels: false,
+    orders: false,
+    adPerformance: false,
+    customerMessages: false,
+    marketing: false,
+  });
+
+  const [loadingState, setLoadingState] = useState({
+    channels: false,
+    orders: false,
+    adPerformance: false,
+    customerMessages: false,
+    marketing: false,
   });
 
   const [newQuickReply, setNewQuickReply] = useState("");
+
+  // Simulated fetch data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      // In a real app, fetch from API
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Using default values for demo
+    };
+
+    fetchData();
+  }, []);
+
+  // Check for changes when state changes
+  useEffect(() => {
+    // Check channels
+    const channelsChanged =
+      JSON.stringify(initialState.notificationChannels) !==
+      JSON.stringify(notificationChannels);
+
+    // Check order notifications
+    const orderNotificationsChanged =
+      initialState.notifications.newOrder !== notifications.newOrder ||
+      initialState.notifications.orderUpdates !== notifications.orderUpdates ||
+      initialState.notifications.orderCancellations !==
+        notifications.orderCancellations;
+
+    // Check ad performance
+    const adPerformanceChanged =
+      initialState.notifications.lowEngagement !==
+        notifications.lowEngagement ||
+      initialState.notifications.budgetAlerts !== notifications.budgetAlerts ||
+      initialState.notifications.campaignEnding !==
+        notifications.campaignEnding;
+
+    // Check customer messages
+    const customerMessagesChanged =
+      initialState.notifications.customerChat !== notifications.customerChat ||
+      initialState.notifications.customerReviews !==
+        notifications.customerReviews ||
+      JSON.stringify(initialState.chatSettings) !==
+        JSON.stringify(chatSettings);
+
+    // Check marketing
+    const marketingChanged =
+      initialState.notifications.marketingEmails !==
+        notifications.marketingEmails ||
+      initialState.notifications.pushNotifications !==
+        notifications.pushNotifications ||
+      initialState.notifications.promotionalAlerts !==
+        notifications.promotionalAlerts;
+
+    setHasChanges({
+      channels: channelsChanged,
+      orders: orderNotificationsChanged,
+      adPerformance: adPerformanceChanged,
+      customerMessages: customerMessagesChanged,
+      marketing: marketingChanged,
+    });
+  }, [notifications, notificationChannels, chatSettings, initialState]);
 
   const handleNotificationChange = (key) => {
     setNotifications((prev) => ({
@@ -92,16 +170,130 @@ const NotificationSettings = () => {
     }));
   };
 
-  const handleSave = async () => {
-    setLoading(true);
+  const setLoading = (section, isLoading) => {
+    setLoadingState((prev) => ({
+      ...prev,
+      [section]: isLoading,
+    }));
+  };
+
+  const handleSaveChannels = async () => {
+    setLoading("channels", true);
     try {
-      // In a real application, you would save these settings to your backend
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulating API call
-      toast.success("Notification settings saved successfully!");
+      // In a real app, save to backend
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // Update initial state on successful save
+      setInitialState((prev) => ({
+        ...prev,
+        notificationChannels: { ...notificationChannels },
+      }));
+
+      toast.success("Notification channels saved successfully!");
     } catch (error) {
-      toast.error("Failed to save notification settings");
+      toast.error("Failed to save notification channels");
     } finally {
-      setLoading(false);
+      setLoading("channels", false);
+    }
+  };
+
+  const handleSaveOrderNotifications = async () => {
+    setLoading("orders", true);
+    try {
+      // In a real app, save to backend
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // Update initial state on successful save
+      setInitialState((prev) => ({
+        ...prev,
+        notifications: {
+          ...prev.notifications,
+          newOrder: notifications.newOrder,
+          orderUpdates: notifications.orderUpdates,
+          orderCancellations: notifications.orderCancellations,
+        },
+      }));
+
+      toast.success("Order notifications saved successfully!");
+    } catch (error) {
+      toast.error("Failed to save order notifications");
+    } finally {
+      setLoading("orders", false);
+    }
+  };
+
+  const handleSaveAdPerformance = async () => {
+    setLoading("adPerformance", true);
+    try {
+      // In a real app, save to backend
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // Update initial state on successful save
+      setInitialState((prev) => ({
+        ...prev,
+        notifications: {
+          ...prev.notifications,
+          lowEngagement: notifications.lowEngagement,
+          budgetAlerts: notifications.budgetAlerts,
+          campaignEnding: notifications.campaignEnding,
+        },
+      }));
+
+      toast.success("Ad performance alerts saved successfully!");
+    } catch (error) {
+      toast.error("Failed to save ad performance alerts");
+    } finally {
+      setLoading("adPerformance", false);
+    }
+  };
+
+  const handleSaveCustomerMessages = async () => {
+    setLoading("customerMessages", true);
+    try {
+      // In a real app, save to backend
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // Update initial state on successful save
+      setInitialState((prev) => ({
+        ...prev,
+        notifications: {
+          ...prev.notifications,
+          customerChat: notifications.customerChat,
+          customerReviews: notifications.customerReviews,
+        },
+        chatSettings: { ...chatSettings },
+      }));
+
+      toast.success("Customer message settings saved successfully!");
+    } catch (error) {
+      toast.error("Failed to save customer message settings");
+    } finally {
+      setLoading("customerMessages", false);
+    }
+  };
+
+  const handleSaveMarketing = async () => {
+    setLoading("marketing", true);
+    try {
+      // In a real app, save to backend
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // Update initial state on successful save
+      setInitialState((prev) => ({
+        ...prev,
+        notifications: {
+          ...prev.notifications,
+          marketingEmails: notifications.marketingEmails,
+          pushNotifications: notifications.pushNotifications,
+          promotionalAlerts: notifications.promotionalAlerts,
+        },
+      }));
+
+      toast.success("Marketing communication preferences saved successfully!");
+    } catch (error) {
+      toast.error("Failed to save marketing preferences");
+    } finally {
+      setLoading("marketing", false);
     }
   };
 
@@ -130,15 +322,18 @@ const NotificationSettings = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-          Notification Settings
-        </h2>
-        <SaveButton onClick={handleSave} loading={loading} />
-      </div>
+      <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+        Notification Settings
+      </h2>
 
       {/* Notification Channels */}
-      <SettingsSection title="Notification Channels" icon={Bell}>
+      <SettingsSection
+        title="Notification Channels"
+        icon={Bell}
+        onSave={handleSaveChannels}
+        loading={loadingState.channels}
+        disabled={!hasChanges.channels}
+      >
         <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
           Choose how you'd like to receive your notifications
         </p>
@@ -163,7 +358,13 @@ const NotificationSettings = () => {
       </SettingsSection>
 
       {/* Order Notifications */}
-      <SettingsSection title="Order Notifications" icon={ShoppingBag}>
+      <SettingsSection
+        title="Order Notifications"
+        icon={ShoppingBag}
+        onSave={handleSaveOrderNotifications}
+        loading={loadingState.orders}
+        disabled={!hasChanges.orders}
+      >
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
           <NotificationToggle
             label="New Orders"
@@ -187,7 +388,13 @@ const NotificationSettings = () => {
       </SettingsSection>
 
       {/* Ad Performance Alerts */}
-      <SettingsSection title="Ad Performance Alerts" icon={TrendingUp}>
+      <SettingsSection
+        title="Ad Performance Alerts"
+        icon={TrendingUp}
+        onSave={handleSaveAdPerformance}
+        loading={loadingState.adPerformance}
+        disabled={!hasChanges.adPerformance}
+      >
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
           <NotificationToggle
             label="Low Engagement Alerts"
@@ -211,7 +418,13 @@ const NotificationSettings = () => {
       </SettingsSection>
 
       {/* Customer Messages */}
-      <SettingsSection title="Customer Messages" icon={MessageCircle}>
+      <SettingsSection
+        title="Customer Messages"
+        icon={MessageCircle}
+        onSave={handleSaveCustomerMessages}
+        loading={loadingState.customerMessages}
+        disabled={!hasChanges.customerMessages}
+      >
         <div className="space-y-4">
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
             <NotificationToggle
@@ -293,7 +506,13 @@ const NotificationSettings = () => {
       </SettingsSection>
 
       {/* Marketing Notifications */}
-      <SettingsSection title="Marketing Communications" icon={Mail}>
+      <SettingsSection
+        title="Marketing Communications"
+        icon={Mail}
+        onSave={handleSaveMarketing}
+        loading={loadingState.marketing}
+        disabled={!hasChanges.marketing}
+      >
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
           <NotificationToggle
             label="Marketing Emails"

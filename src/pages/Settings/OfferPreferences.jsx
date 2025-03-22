@@ -10,11 +10,10 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import SettingsSection from "../../components/settings/SettingsSection";
-import SaveButton from "../../components/settings/SaveButton";
 
 const OfferPreferences = () => {
-  const [loading, setLoading] = useState(false);
-  const [offerPreferences, setOfferPreferences] = useState({
+  // Initial state
+  const [initialState, setInitialState] = useState({
     categories: ["Food", "Clothing", "Electronics"],
     tags: ["Sale", "New", "Limited", "Featured"],
     defaultExpirationDays: 7,
@@ -25,8 +24,60 @@ const OfferPreferences = () => {
     automaticRenewal: false,
   });
 
+  const [offerPreferences, setOfferPreferences] = useState({ ...initialState });
+
   const [newCategory, setNewCategory] = useState("");
   const [newTag, setNewTag] = useState("");
+
+  const [loadingState, setLoadingState] = useState({
+    categories: false,
+    tags: false,
+    defaultSettings: false,
+    expiration: false,
+  });
+
+  // Track if sections have pending changes
+  const [hasChanges, setHasChanges] = useState({
+    categories: false,
+    tags: false,
+    defaultSettings: false,
+    expiration: false,
+  });
+
+  // Check for changes when preferences change
+  useEffect(() => {
+    // Check categories
+    const categoriesChanged =
+      JSON.stringify(initialState.categories) !==
+      JSON.stringify(offerPreferences.categories);
+
+    // Check tags
+    const tagsChanged =
+      JSON.stringify(initialState.tags) !==
+      JSON.stringify(offerPreferences.tags);
+
+    // Check default settings
+    const defaultSettingsChanged =
+      initialState.defaultExpirationDays !==
+        offerPreferences.defaultExpirationDays ||
+      initialState.defaultDiscount !== offerPreferences.defaultDiscount ||
+      initialState.defaultMinPurchase !== offerPreferences.defaultMinPurchase;
+
+    // Check expiration settings
+    const expirationChanged =
+      initialState.notifyBeforeExpiration !==
+        offerPreferences.notifyBeforeExpiration ||
+      initialState.notifyDaysBeforeExpiration !==
+        offerPreferences.notifyDaysBeforeExpiration ||
+      initialState.automaticRenewal !== offerPreferences.automaticRenewal;
+
+    setHasChanges({
+      categories: categoriesChanged,
+      tags: tagsChanged,
+      defaultSettings: defaultSettingsChanged,
+      expiration: expirationChanged,
+    });
+  }, [offerPreferences, initialState]);
 
   // Simulated fetch of preferences
   useEffect(() => {
@@ -36,8 +87,20 @@ const OfferPreferences = () => {
         // Simulate loading delay
         await new Promise((resolve) => setTimeout(resolve, 500));
 
-        // Normally you would fetch from API here and update state
-        // For now, we'll use the default state
+        // For demo purposes, we'll use the default values
+        const fetchedData = {
+          categories: ["Food", "Clothing", "Electronics"],
+          tags: ["Sale", "New", "Limited", "Featured"],
+          defaultExpirationDays: 7,
+          defaultDiscount: 10,
+          defaultMinPurchase: 0,
+          notifyBeforeExpiration: true,
+          notifyDaysBeforeExpiration: 1,
+          automaticRenewal: false,
+        };
+
+        setInitialState(fetchedData);
+        setOfferPreferences(fetchedData);
       } catch (error) {
         console.error("Error fetching offer preferences:", error);
         toast.error("Failed to load offer preferences");
@@ -46,6 +109,13 @@ const OfferPreferences = () => {
 
     fetchPreferences();
   }, []);
+
+  const setLoading = (section, isLoading) => {
+    setLoadingState((prev) => ({
+      ...prev,
+      [section]: isLoading,
+    }));
+  };
 
   const handleAddCategory = () => {
     if (!newCategory.trim()) return;
@@ -97,31 +167,104 @@ const OfferPreferences = () => {
     }));
   };
 
-  const handleSave = async () => {
-    setLoading(true);
+  const handleSaveCategories = async () => {
+    setLoading("categories", true);
     try {
       // In a real app, this would save to an API
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success("Offer preferences saved successfully!");
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // Update initial state to match current state after successful save
+      setInitialState((prev) => ({
+        ...prev,
+        categories: [...offerPreferences.categories],
+      }));
+
+      toast.success("Categories saved successfully!");
     } catch (error) {
-      console.error("Error saving offer preferences:", error);
-      toast.error("Failed to save offer preferences");
+      toast.error("Failed to save categories");
     } finally {
-      setLoading(false);
+      setLoading("categories", false);
+    }
+  };
+
+  const handleSaveTags = async () => {
+    setLoading("tags", true);
+    try {
+      // In a real app, this would save to an API
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // Update initial state after successful save
+      setInitialState((prev) => ({
+        ...prev,
+        tags: [...offerPreferences.tags],
+      }));
+
+      toast.success("Tags saved successfully!");
+    } catch (error) {
+      toast.error("Failed to save tags");
+    } finally {
+      setLoading("tags", false);
+    }
+  };
+
+  const handleSaveDefaultSettings = async () => {
+    setLoading("defaultSettings", true);
+    try {
+      // In a real app, this would save to an API
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // Update initial state after successful save
+      setInitialState((prev) => ({
+        ...prev,
+        defaultExpirationDays: offerPreferences.defaultExpirationDays,
+        defaultDiscount: offerPreferences.defaultDiscount,
+        defaultMinPurchase: offerPreferences.defaultMinPurchase,
+      }));
+
+      toast.success("Default offer settings saved successfully!");
+    } catch (error) {
+      toast.error("Failed to save default settings");
+    } finally {
+      setLoading("defaultSettings", false);
+    }
+  };
+
+  const handleSaveExpirationSettings = async () => {
+    setLoading("expiration", true);
+    try {
+      // In a real app, this would save to an API
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // Update initial state after successful save
+      setInitialState((prev) => ({
+        ...prev,
+        notifyBeforeExpiration: offerPreferences.notifyBeforeExpiration,
+        notifyDaysBeforeExpiration: offerPreferences.notifyDaysBeforeExpiration,
+        automaticRenewal: offerPreferences.automaticRenewal,
+      }));
+
+      toast.success("Expiration settings saved successfully!");
+    } catch (error) {
+      toast.error("Failed to save expiration settings");
+    } finally {
+      setLoading("expiration", false);
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-          Offer Preferences
-        </h2>
-        <SaveButton onClick={handleSave} loading={loading} />
-      </div>
+      <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+        Offer Preferences
+      </h2>
 
       {/* Categories Section */}
-      <SettingsSection title="Default Categories" icon={Tag}>
+      <SettingsSection
+        title="Default Categories"
+        icon={Tag}
+        onSave={handleSaveCategories}
+        loading={loadingState.categories}
+        disabled={!hasChanges.categories}
+      >
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           Define categories that will be available when creating new offers
         </p>
@@ -165,7 +308,13 @@ const OfferPreferences = () => {
       </SettingsSection>
 
       {/* Tags Section */}
-      <SettingsSection title="Default Tags" icon={Tag}>
+      <SettingsSection
+        title="Default Tags"
+        icon={Tag}
+        onSave={handleSaveTags}
+        loading={loadingState.tags}
+        disabled={!hasChanges.tags}
+      >
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           Define tags that will be available when creating new offers
         </p>
@@ -209,7 +358,13 @@ const OfferPreferences = () => {
       </SettingsSection>
 
       {/* Default Offer Settings */}
-      <SettingsSection title="Default Offer Settings" icon={Calendar}>
+      <SettingsSection
+        title="Default Offer Settings"
+        icon={Calendar}
+        onSave={handleSaveDefaultSettings}
+        loading={loadingState.defaultSettings}
+        disabled={!hasChanges.defaultSettings}
+      >
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -275,7 +430,13 @@ const OfferPreferences = () => {
       </SettingsSection>
 
       {/* Notifications & Renewal */}
-      <SettingsSection title="Expiration Settings" icon={AlertCircle}>
+      <SettingsSection
+        title="Expiration Settings"
+        icon={AlertCircle}
+        onSave={handleSaveExpirationSettings}
+        loading={loadingState.expiration}
+        disabled={!hasChanges.expiration}
+      >
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>

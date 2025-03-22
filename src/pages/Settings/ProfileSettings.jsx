@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   Store,
   MapPin,
-  Save,
   Globe,
   Phone,
   Mail,
@@ -10,14 +9,17 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import SettingsSection from "../../components/settings/SettingsSection";
-import SaveButton from "../../components/settings/SaveButton";
 import LocationPicker from "../../components/LocationPicker";
 import BusinessHoursEditor from "../../components/settings/BusinessHoursEditor";
 import ImageUploader from "../../components/settings/ImageUploader";
+import {
+  updateShopLocation,
+  getShopLocation,
+} from "../../services/api/shopService";
 
 const ProfileSettings = () => {
-  const [loading, setLoading] = useState(false);
-  const [profileData, setProfileData] = useState({
+  // Initial state to compare against for changes
+  const [initialProfileData, setInitialProfileData] = useState({
     shopName: "",
     description: "",
     category: "",
@@ -44,10 +46,79 @@ const ProfileSettings = () => {
     coverImage: null,
   });
 
+  // Current state that can be modified
+  const [profileData, setProfileData] = useState({ ...initialProfileData });
+
+  // Track loading states for each section
+  const [loadingState, setLoadingState] = useState({
+    basicInfo: false,
+    businessHours: false,
+    images: false,
+    contactInfo: false,
+    socialLinks: false,
+    location: false,
+  });
+
+  // Track if each section has changes
+  const [hasChanges, setHasChanges] = useState({
+    basicInfo: false,
+    businessHours: false,
+    images: false,
+    contactInfo: false,
+    socialLinks: false,
+    location: false,
+  });
+
+  // Check for changes in different sections
+  useEffect(() => {
+    // Check basic info
+    const basicInfoChanged =
+      initialProfileData.shopName !== profileData.shopName ||
+      initialProfileData.description !== profileData.description ||
+      initialProfileData.category !== profileData.category;
+
+    // Check business hours
+    const businessHoursChanged =
+      JSON.stringify(initialProfileData.businessHours) !==
+      JSON.stringify(profileData.businessHours);
+
+    // Check images
+    const imagesChanged =
+      initialProfileData.logo !== profileData.logo ||
+      initialProfileData.coverImage !== profileData.coverImage;
+
+    // Check contact info
+    const contactInfoChanged =
+      initialProfileData.email !== profileData.email ||
+      initialProfileData.phone !== profileData.phone ||
+      initialProfileData.website !== profileData.website;
+
+    // Check social links
+    const socialLinksChanged =
+      JSON.stringify(initialProfileData.socialLinks) !==
+      JSON.stringify(profileData.socialLinks);
+
+    // Check location
+    const locationChanged =
+      JSON.stringify(initialProfileData.location) !==
+        JSON.stringify(profileData.location) ||
+      initialProfileData.address !== profileData.address;
+
+    setHasChanges({
+      basicInfo: basicInfoChanged,
+      businessHours: businessHoursChanged,
+      images: imagesChanged,
+      contactInfo: contactInfoChanged,
+      socialLinks: socialLinksChanged,
+      location: locationChanged,
+    });
+  }, [profileData, initialProfileData]);
+
   useEffect(() => {
     fetchShopDetails();
   }, []);
 
+  // Fetch shop details and set both current and initial state
   const fetchShopDetails = async () => {
     const token = localStorage.getItem("token");
 
@@ -65,20 +136,15 @@ const ProfileSettings = () => {
         );
         const shop = await shopResponse.json();
 
-        // Check if location coordinates exist in the shop data
-        const location = shop.data.location?.coordinates
-          ? {
-              lat: shop.data.location.coordinates[1],
-              lng: shop.data.location.coordinates[0],
-            }
-          : null;
+        // Use the location service to get location data
+        const locationData = await getShopLocation();
 
-        setProfileData({
+        const fetchedData = {
           shopName: shop.data.name || "",
           description: shop.data.description || "",
           category: shop.data.category || "",
           email: decodedToken.email || "",
-          address: shop.data.address || "",
+          address: locationData.address,
           phone: decodedToken.phone || "",
           website: shop.data.website || "",
           socialLinks: shop.data.socialLinks || {
@@ -86,7 +152,7 @@ const ProfileSettings = () => {
             instagram: "",
             twitter: "",
           },
-          location: location,
+          location: locationData.location,
           businessHours: shop.data.businessHours || {
             monday: { open: "09:00", close: "17:00", isOpen: true },
             tuesday: { open: "09:00", close: "17:00", isOpen: true },
@@ -98,11 +164,21 @@ const ProfileSettings = () => {
           },
           logo: shop.data.logo || null,
           coverImage: shop.data.coverImage || null,
-        });
+        };
+
+        setInitialProfileData(fetchedData);
+        setProfileData(fetchedData);
       } catch (error) {
         console.error("Error fetching shop details:", error);
       }
     }
+  };
+
+  const setLoading = (section, isLoading) => {
+    setLoadingState((prev) => ({
+      ...prev,
+      [section]: isLoading,
+    }));
   };
 
   const handleChange = (e) => {
@@ -145,35 +221,18 @@ const ProfileSettings = () => {
     }));
   };
 
-  const handleSave = async () => {
-    setLoading(true);
+  const handleSaveBasicInfo = async () => {
+    setLoading("basicInfo", true);
     try {
       const token = localStorage.getItem("token");
       const decodedToken = JSON.parse(atob(token.split(".")[1]));
 
-      // Prepare location data in GeoJSON format
-      const locationData = profileData.location
-        ? {
-            type: "Point",
-            coordinates: [profileData.location.lng, profileData.location.lat],
-          }
-        : undefined;
-
-      // Create data object to send
       const shopData = {
         name: profileData.shopName,
         description: profileData.description,
         category: profileData.category,
-        address: profileData.address,
-        website: profileData.website,
-        socialLinks: profileData.socialLinks,
-        location: locationData,
-        businessHours: profileData.businessHours,
-        logo: profileData.logo,
-        coverImage: profileData.coverImage,
       };
 
-      // Send updated data to server
       const response = await fetch(
         `https://closecart-backend.vercel.app/api/v1/shops/${decodedToken.shopId}`,
         {
@@ -189,29 +248,248 @@ const ProfileSettings = () => {
       const data = await response.json();
 
       if (data.success) {
-        toast.success("Profile settings saved successfully!");
+        // Update initial state after successful save
+        setInitialProfileData((prev) => ({
+          ...prev,
+          shopName: profileData.shopName,
+          description: profileData.description,
+          category: profileData.category,
+        }));
+
+        toast.success("Shop details saved successfully!");
       } else {
-        toast.error(data.message || "Failed to save profile settings");
+        toast.error(data.message || "Failed to save shop details");
       }
     } catch (error) {
-      console.error("Error saving settings:", error);
-      toast.error("Failed to save settings");
+      console.error("Error saving shop details:", error);
+      toast.error("Failed to save shop details");
     } finally {
-      setLoading(false);
+      setLoading("basicInfo", false);
+    }
+  };
+
+  const handleSaveBusinessHours = async () => {
+    setLoading("businessHours", true);
+    try {
+      const token = localStorage.getItem("token");
+      const decodedToken = JSON.parse(atob(token.split(".")[1]));
+
+      const shopData = {
+        businessHours: profileData.businessHours,
+      };
+
+      const response = await fetch(
+        `https://closecart-backend.vercel.app/api/v1/shops/${decodedToken.shopId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(shopData),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Update initial state after successful save
+        setInitialProfileData((prev) => ({
+          ...prev,
+          businessHours: profileData.businessHours,
+        }));
+
+        toast.success("Business hours saved successfully!");
+      } else {
+        toast.error(data.message || "Failed to save business hours");
+      }
+    } catch (error) {
+      console.error("Error saving business hours:", error);
+      toast.error("Failed to save business hours");
+    } finally {
+      setLoading("businessHours", false);
+    }
+  };
+
+  const handleSaveImages = async () => {
+    setLoading("images", true);
+    try {
+      const token = localStorage.getItem("token");
+      const decodedToken = JSON.parse(atob(token.split(".")[1]));
+
+      const shopData = {
+        logo: profileData.logo,
+        coverImage: profileData.coverImage,
+      };
+
+      const response = await fetch(
+        `https://closecart-backend.vercel.app/api/v1/shops/${decodedToken.shopId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(shopData),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Update initial state after successful save
+        setInitialProfileData((prev) => ({
+          ...prev,
+          logo: profileData.logo,
+          coverImage: profileData.coverImage,
+        }));
+
+        toast.success("Shop images saved successfully!");
+      } else {
+        toast.error(data.message || "Failed to save shop images");
+      }
+    } catch (error) {
+      console.error("Error saving shop images:", error);
+      toast.error("Failed to save shop images");
+    } finally {
+      setLoading("images", false);
+    }
+  };
+
+  const handleSaveContactInfo = async () => {
+    setLoading("contactInfo", true);
+    try {
+      const token = localStorage.getItem("token");
+      const decodedToken = JSON.parse(atob(token.split(".")[1]));
+
+      const shopData = {
+        phone: profileData.phone,
+        email: profileData.email,
+        website: profileData.website,
+      };
+
+      const response = await fetch(
+        `https://closecart-backend.vercel.app/api/v1/shops/${decodedToken.shopId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(shopData),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Update initial state after successful save
+        setInitialProfileData((prev) => ({
+          ...prev,
+          phone: profileData.phone,
+          email: profileData.email,
+          website: profileData.website,
+        }));
+
+        toast.success("Contact information saved successfully!");
+      } else {
+        toast.error(data.message || "Failed to save contact information");
+      }
+    } catch (error) {
+      console.error("Error saving contact information:", error);
+      toast.error("Failed to save contact information");
+    } finally {
+      setLoading("contactInfo", false);
+    }
+  };
+
+  const handleSaveSocialLinks = async () => {
+    setLoading("socialLinks", true);
+    try {
+      const token = localStorage.getItem("token");
+      const decodedToken = JSON.parse(atob(token.split(".")[1]));
+
+      const shopData = {
+        socialLinks: profileData.socialLinks,
+      };
+
+      const response = await fetch(
+        `https://closecart-backend.vercel.app/api/v1/shops/${decodedToken.shopId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(shopData),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Update initial state after successful save
+        setInitialProfileData((prev) => ({
+          ...prev,
+          socialLinks: profileData.socialLinks,
+        }));
+
+        toast.success("Social links saved successfully!");
+      } else {
+        toast.error(data.message || "Failed to save social links");
+      }
+    } catch (error) {
+      console.error("Error saving social links:", error);
+      toast.error("Failed to save social links");
+    } finally {
+      setLoading("socialLinks", false);
+    }
+  };
+
+  const handleSaveLocation = async () => {
+    setLoading("location", true);
+    try {
+      const locationData = {
+        address: profileData.address,
+        location: profileData.location,
+      };
+
+      const data = await updateShopLocation(locationData);
+
+      if (data.success) {
+        // Update initial state after successful save
+        setInitialProfileData((prev) => ({
+          ...prev,
+          address: profileData.address,
+          location: profileData.location,
+        }));
+
+        toast.success("Location information saved successfully!");
+      } else {
+        toast.error(data.message || "Failed to save location information");
+      }
+    } catch (error) {
+      console.error("Error saving location information:", error);
+      toast.error("Failed to save location information");
+    } finally {
+      setLoading("location", false);
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-          Business Profile
-        </h2>
-        <SaveButton onClick={handleSave} loading={loading} />
-      </div>
+      <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+        Business Profile
+      </h2>
 
       {/* Basic Shop Details */}
-      <SettingsSection title="Shop Details" icon={Store}>
+      <SettingsSection
+        title="Shop Details"
+        icon={Store}
+        onSave={handleSaveBasicInfo}
+        loading={loadingState.basicInfo}
+        disabled={!hasChanges.basicInfo}
+      >
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -264,7 +542,13 @@ const ProfileSettings = () => {
       </SettingsSection>
 
       {/* Business Hours */}
-      <SettingsSection title="Business Hours" icon={Store}>
+      <SettingsSection
+        title="Business Hours"
+        icon={Store}
+        onSave={handleSaveBusinessHours}
+        loading={loadingState.businessHours}
+        disabled={!hasChanges.businessHours}
+      >
         <BusinessHoursEditor
           businessHours={profileData.businessHours}
           onChange={handleBusinessHoursChange}
@@ -272,7 +556,13 @@ const ProfileSettings = () => {
       </SettingsSection>
 
       {/* Logo & Cover Image */}
-      <SettingsSection title="Shop Images" icon={Store}>
+      <SettingsSection
+        title="Shop Images"
+        icon={Store}
+        onSave={handleSaveImages}
+        loading={loadingState.images}
+        disabled={!hasChanges.images}
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -300,7 +590,13 @@ const ProfileSettings = () => {
       </SettingsSection>
 
       {/* Contact Information */}
-      <SettingsSection title="Contact Information" icon={Phone}>
+      <SettingsSection
+        title="Contact Information"
+        icon={Phone}
+        onSave={handleSaveContactInfo}
+        loading={loadingState.contactInfo}
+        disabled={!hasChanges.contactInfo}
+      >
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -343,7 +639,13 @@ const ProfileSettings = () => {
       </SettingsSection>
 
       {/* Social Links */}
-      <SettingsSection title="Social Media Links" icon={Globe}>
+      <SettingsSection
+        title="Social Media Links"
+        icon={Globe}
+        onSave={handleSaveSocialLinks}
+        loading={loadingState.socialLinks}
+        disabled={!hasChanges.socialLinks}
+      >
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -388,7 +690,13 @@ const ProfileSettings = () => {
       </SettingsSection>
 
       {/* Shop Location */}
-      <SettingsSection title="Shop Location" icon={MapPin}>
+      <SettingsSection
+        title="Shop Location"
+        icon={MapPin}
+        onSave={handleSaveLocation}
+        loading={loadingState.location}
+        disabled={!hasChanges.location}
+      >
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

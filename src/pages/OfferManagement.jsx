@@ -21,6 +21,9 @@ const OfferManagement = () => {
     startDate: "",
     endDate: "",
     imageUrl: "",
+    category: "",
+    tags: [], // Add this for storing multiple tags
+    minPurchase: "", // Optional min purchase amount
   });
 
   const fetchOffers = async () => {
@@ -138,6 +141,9 @@ const OfferManagement = () => {
       startDate: "",
       endDate: "",
       imageUrl: "",
+      category: "",
+      tags: [], // Add this for storing multiple tags
+      minPurchase: "", // Optional min purchase amount
     });
   };
 
