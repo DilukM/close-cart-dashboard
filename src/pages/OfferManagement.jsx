@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, Edit2, Trash2, Loader } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, Loader, ArrowLeft } from "lucide-react";
 import CreateModal from "../components/CreateOfferModel";
-import Modal from "../components/Model";
 
 const OfferManagement = () => {
   const [offers, setOffers] = useState([]);
@@ -11,9 +10,7 @@ const OfferManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [selectedOffer, setSelectedOffer] = useState(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentView, setCurrentView] = useState("list"); // "list", "create", "edit", "detail"
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -87,7 +84,7 @@ const OfferManagement = () => {
       }
 
       await fetchOffers();
-      setIsCreateModalOpen(false);
+      setCurrentView("list");
       resetForm();
     } catch (error) {
       console.error("Error creating offer:", error);
@@ -112,8 +109,7 @@ const OfferManagement = () => {
         }
       );
       await fetchOffers();
-      setIsDetailModalOpen(false);
-      setIsEditMode(false);
+      setCurrentView("list");
       resetForm();
     } catch (error) {
       console.error("Error updating offer:", error);
@@ -133,7 +129,7 @@ const OfferManagement = () => {
         },
       });
       await fetchOffers();
-      setIsDetailModalOpen(false);
+      setCurrentView("list");
     } catch (error) {
       console.error("Error deleting offer:", error);
       setError(error.message);
@@ -194,141 +190,160 @@ const OfferManagement = () => {
       </div>
     );
   }
-  return (
-    <div className="min-h-screen p-4 sm:p-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-          Offer Management
-        </h1>
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all duration-300"
-        >
-          <Plus size={20} /> Create Offer
-        </button>
-      </div>
 
-      {/* Search and Filter */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6 sm:mb-8">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <input
-            placeholder="Search offers..."
-            className="w-full pl-10 pr-4 py-2 bg-gray-200 dark:bg-gray-900 border border-white dark:border-gray-700 rounded-lg text-grey-800 dark:text-white focus:outline-none focus:border-yellow-500 transition-colors duration-300"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          className="w-full sm:w-48 px-4 py-2 bg-gray-200 dark:bg-gray-900 border border-white dark:border-gray-700 rounded-lg text-grey-800 dark:text-white focus:outline-none focus:border-yellow-500"
-        >
-          <option value="newest">Newest First</option>
-          <option value="highest">Highest Discount</option>
-          <option value="lowest">Lowest Discount</option>
-        </select>
-      </div>
-
-      {/* Offer Cards */}
-      <motion.div
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"
-        layout
-      >
-        <AnimatePresence>
-          {filteredOffers.map((offer) => (
-            <motion.div
-              key={offer._id}
-              layout
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div
-                className="bg-gray-100 dark:bg-gray-700 shadow-md border dark:border-gray-700 border-white hover:border-yellow-500 rounded-lg cursor-pointer transition-all duration-300 relative overflow-hidden group"
-                onClick={() => {
-                  setSelectedOffer(offer);
-                  setIsDetailModalOpen(true);
-                }}
-              >
-                <img
-                  src={offer.imageUrl}
-                  alt={offer.title}
-                  className="w-full h-40 sm:h-50 object-cover rounded-t-lg shadow-md"
-                />
-                <div className="p-4 sm:p-6 transition-all duration-300 relative overflow-hidden group">
-                  <h3 className="text-lg sm:text-xl font-semibold text-yellow-500 mb-2">
-                    {offer.title}
-                  </h3>
-                  <p className="dark:text-gray-400 text-gray-700 mb-2 sm:mb-4">
-                    {offer.discount}% OFF
-                  </p>
-                  <p className="dark:text-gray-300 text-gray-800 line-clamp-2 text-sm sm:text-base">
-                    {offer.description}
-                  </p>
-                  <p className="dark:text-gray-300 text-gray-800 line-clamp-2 text-sm sm:text-base mt-2">
-                    <span className="block sm:inline">
-                      From: {formatDate(offer.startDate)}
-                    </span>{" "}
-                    <span className="block sm:inline">
-                      To: {formatDate(offer.endDate)}
-                    </span>
-                  </p>
-
-                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/0 to-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </motion.div>
-
-      {/* Create Modal */}
-      <Modal
-        isOpen={isCreateModalOpen}
-        onClose={() => {
-          if (!isSubmitting) {
-            setIsCreateModalOpen(false);
-            resetForm();
-          }
-        }}
-      >
-        <CreateModal
-          onClose={() => {
-            if (!isSubmitting) {
-              setIsCreateModalOpen(false);
+  // List View
+  if (currentView === "list") {
+    return (
+      <div className="min-h-screen p-4 sm:p-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            Offer Management
+          </h1>
+          <button
+            onClick={() => {
               resetForm();
-            }
-          }}
-          formData={formData}
-          setFormData={setFormData}
-          handleSubmit={handleCreate}
-          isEditMode={false}
-          isSubmitting={isSubmitting}
-        />
-      </Modal>
+              setCurrentView("create");
+            }}
+            className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all duration-300"
+          >
+            <Plus size={20} /> Create Offer
+          </button>
+        </div>
 
-      {/* Detail & Edit Modal */}
-      <Modal
-        details={offers}
-        isOpen={isDetailModalOpen}
-        onClose={() => {
-          if (!isSubmitting) {
-            setIsDetailModalOpen(false);
-            setIsEditMode(false);
-            resetForm();
-          }
-        }}
-      >
-        {isEditMode ? (
+        {/* Search and Filter */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6 sm:mb-8">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <input
+              placeholder="Search offers..."
+              className="w-full pl-10 pr-4 py-2 bg-gray-200 dark:bg-gray-900 border border-white dark:border-gray-700 rounded-lg text-grey-800 dark:text-white focus:outline-none focus:border-yellow-500 transition-colors duration-300"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="w-full sm:w-48 px-4 py-2 bg-gray-200 dark:bg-gray-900 border border-white dark:border-gray-700 rounded-lg text-grey-800 dark:text-white focus:outline-none focus:border-yellow-500"
+          >
+            <option value="newest">Newest First</option>
+            <option value="highest">Highest Discount</option>
+            <option value="lowest">Lowest Discount</option>
+          </select>
+        </div>
+
+        {/* Offer Cards */}
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"
+          layout
+        >
+          <AnimatePresence>
+            {filteredOffers.map((offer) => (
+              <motion.div
+                key={offer._id}
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div
+                  className="bg-gray-100 dark:bg-gray-700 shadow-md border dark:border-gray-700 border-white hover:border-yellow-500 rounded-lg cursor-pointer transition-all duration-300 relative overflow-hidden group"
+                  onClick={() => {
+                    setSelectedOffer(offer);
+                    setCurrentView("detail");
+                  }}
+                >
+                  <img
+                    src={offer.imageUrl}
+                    alt={offer.title}
+                    className="w-full h-40 sm:h-50 object-cover rounded-t-lg shadow-md"
+                  />
+                  <div className="p-4 sm:p-6 transition-all duration-300 relative overflow-hidden group">
+                    <h3 className="text-lg sm:text-xl font-semibold text-yellow-500 mb-2">
+                      {offer.title}
+                    </h3>
+                    <p className="dark:text-gray-400 text-gray-700 mb-2 sm:mb-4">
+                      {offer.discount}% OFF
+                    </p>
+                    <p className="dark:text-gray-300 text-gray-800 line-clamp-2 text-sm sm:text-base">
+                      {offer.description}
+                    </p>
+                    <p className="dark:text-gray-300 text-gray-800 line-clamp-2 text-sm sm:text-base mt-2">
+                      <span className="block sm:inline">
+                        From: {formatDate(offer.startDate)}
+                      </span>{" "}
+                      <span className="block sm:inline">
+                        To: {formatDate(offer.endDate)}
+                      </span>
+                    </p>
+
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/0 to-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Create View
+  if (currentView === "create") {
+    return (
+      <div className="min-h-screen p-4 sm:p-8">
+        <div className="flex items-center mb-6">
+          <button
+            onClick={() => setCurrentView("list")}
+            className="mr-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            Create New Offer
+          </h1>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
           <CreateModal
             onClose={() => {
               if (!isSubmitting) {
-                setIsEditMode(false);
-                setIsDetailModalOpen(false);
+                setCurrentView("list");
                 resetForm();
+              }
+            }}
+            formData={formData}
+            setFormData={setFormData}
+            handleSubmit={handleCreate}
+            isEditMode={false}
+            isSubmitting={isSubmitting}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Edit View
+  if (currentView === "edit") {
+    return (
+      <div className="min-h-screen p-4 sm:p-8">
+        <div className="flex items-center mb-6">
+          <button
+            onClick={() => setCurrentView("detail")}
+            className="mr-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            Edit Offer
+          </h1>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+          <CreateModal
+            onClose={() => {
+              if (!isSubmitting) {
+                setCurrentView("detail");
               }
             }}
             formData={formData}
@@ -337,7 +352,27 @@ const OfferManagement = () => {
             isEditMode={true}
             isSubmitting={isSubmitting}
           />
-        ) : (
+        </div>
+      </div>
+    );
+  }
+
+  // Detail View
+  if (currentView === "detail") {
+    return (
+      <div className="min-h-screen p-4 sm:p-8">
+        <div className="flex items-center mb-6">
+          <button
+            onClick={() => setCurrentView("list")}
+            className="mr-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            Offer Details
+          </h1>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
           <div className="flex flex-col md:flex-row items-start gap-4 sm:gap-6">
             {/* Image Section */}
             <div className="w-full md:w-1/2 mb-4 md:mb-0">
@@ -409,7 +444,7 @@ const OfferManagement = () => {
                       ...selectedOffer,
                       tags: selectedOffer.tags || [],
                     });
-                    setIsEditMode(true);
+                    setCurrentView("edit");
                   }}
                   disabled={isSubmitting}
                 >
@@ -434,10 +469,12 @@ const OfferManagement = () => {
               </div>
             </div>
           </div>
-        )}
-      </Modal>
-    </div>
-  );
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 };
 
 export default OfferManagement;

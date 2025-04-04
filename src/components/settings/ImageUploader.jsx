@@ -1,13 +1,20 @@
 import React, { useState, useRef } from "react";
 import { Upload, X, Image } from "lucide-react";
 import { toast } from "react-toastify";
+import { getCurrentShopId } from "../../services/api/shopService";
 
-const ImageUploader = ({ currentImage, onImageUpload, aspectRatio = 1 }) => {
+const ImageUploader = ({
+  currentImage,
+  onImageUpload,
+  aspectRatio = 1,
+  imageType = "logo",
+}) => {
   const [previewUrl, setPreviewUrl] = useState(currentImage);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleFileChange = async (e) => {
+    const shopId = getCurrentShopId();
     const file = e.target.files[0];
     if (!file) return;
 
@@ -34,13 +41,32 @@ const ImageUploader = ({ currentImage, onImageUpload, aspectRatio = 1 }) => {
     // In a real app, upload to server/cloud storage
     setIsUploading(true);
     try {
-      // This is where you'd typically upload to a backend service
-      // For demo, we'll just simulate an upload delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const baseUrl = "https://closecart-backend.vercel.app/api/v1"; // Replace with your actual base URL
+      const endpoint = `${baseUrl}/${shopId}/${
+        imageType === "logo" ? "logo" : "cover-image"
+      }`;
 
-      // Simulate getting back a URL from server
-      // In a real app, this would be the URL returned from your upload service
-      const uploadedUrl = reader.result;
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to upload image");
+      }
+
+      // Use the URL returned from the API
+      const uploadedUrl = data.data || data.url;
       onImageUpload(uploadedUrl);
       toast.success("Image uploaded successfully");
     } catch (error) {

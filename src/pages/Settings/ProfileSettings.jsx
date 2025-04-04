@@ -13,7 +13,6 @@ import LocationPicker from "../../components/LocationPicker";
 import BusinessHoursEditor from "../../components/settings/BusinessHoursEditor";
 import ImageUploader from "../../components/settings/ImageUploader";
 import {
-  updateShopLocation,
   getShopLocation,
 } from "../../services/api/shopService";
 
@@ -224,28 +223,13 @@ const ProfileSettings = () => {
   const handleSaveBasicInfo = async () => {
     setLoading("basicInfo", true);
     try {
-      const token = localStorage.getItem("token");
-      const decodedToken = JSON.parse(atob(token.split(".")[1]));
-
       const shopData = {
         name: profileData.shopName,
         description: profileData.description,
         category: profileData.category,
       };
 
-      const response = await fetch(
-        `https://closecart-backend.vercel.app/api/v1/shops/${decodedToken.shopId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(shopData),
-        }
-      );
-
-      const data = await response.json();
+      const data = await updateShop(shopData);
 
       if (data.success) {
         // Update initial state after successful save
@@ -271,26 +255,11 @@ const ProfileSettings = () => {
   const handleSaveBusinessHours = async () => {
     setLoading("businessHours", true);
     try {
-      const token = localStorage.getItem("token");
-      const decodedToken = JSON.parse(atob(token.split(".")[1]));
-
       const shopData = {
         businessHours: profileData.businessHours,
       };
 
-      const response = await fetch(
-        `https://closecart-backend.vercel.app/api/v1/shops/${decodedToken.shopId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(shopData),
-        }
-      );
-
-      const data = await response.json();
+      const data = await updateShop(shopData);
 
       if (data.success) {
         // Update initial state after successful save
@@ -314,27 +283,12 @@ const ProfileSettings = () => {
   const handleSaveImages = async () => {
     setLoading("images", true);
     try {
-      const token = localStorage.getItem("token");
-      const decodedToken = JSON.parse(atob(token.split(".")[1]));
-
       const shopData = {
         logo: profileData.logo,
         coverImage: profileData.coverImage,
       };
 
-      const response = await fetch(
-        `https://closecart-backend.vercel.app/api/v1/shops/${decodedToken.shopId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(shopData),
-        }
-      );
-
-      const data = await response.json();
+      const data = await updateShop(shopData);
 
       if (data.success) {
         // Update initial state after successful save
@@ -359,28 +313,13 @@ const ProfileSettings = () => {
   const handleSaveContactInfo = async () => {
     setLoading("contactInfo", true);
     try {
-      const token = localStorage.getItem("token");
-      const decodedToken = JSON.parse(atob(token.split(".")[1]));
-
       const shopData = {
         phone: profileData.phone,
         email: profileData.email,
         website: profileData.website,
       };
 
-      const response = await fetch(
-        `https://closecart-backend.vercel.app/api/v1/shops/${decodedToken.shopId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(shopData),
-        }
-      );
-
-      const data = await response.json();
+      const data = await updateShop(shopData);
 
       if (data.success) {
         // Update initial state after successful save
@@ -406,26 +345,11 @@ const ProfileSettings = () => {
   const handleSaveSocialLinks = async () => {
     setLoading("socialLinks", true);
     try {
-      const token = localStorage.getItem("token");
-      const decodedToken = JSON.parse(atob(token.split(".")[1]));
-
       const shopData = {
         socialLinks: profileData.socialLinks,
       };
 
-      const response = await fetch(
-        `https://closecart-backend.vercel.app/api/v1/shops/${decodedToken.shopId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(shopData),
-        }
-      );
-
-      const data = await response.json();
+      const data = await updateShop(shopData);
 
       if (data.success) {
         // Update initial state after successful save
@@ -454,7 +378,7 @@ const ProfileSettings = () => {
         location: profileData.location,
       };
 
-      const data = await updateShopLocation(locationData);
+      const data = await updateShop(locationData);
 
       if (data.success) {
         // Update initial state after successful save
@@ -569,6 +493,7 @@ const ProfileSettings = () => {
               Logo
             </label>
             <ImageUploader
+            imageType="logo"
               currentImage={profileData.logo}
               onImageUpload={(imageUrl) => handleImageUpload("logo", imageUrl)}
               aspectRatio={1}
@@ -579,6 +504,7 @@ const ProfileSettings = () => {
               Cover Image
             </label>
             <ImageUploader
+            imageType="cover-image"
               currentImage={profileData.coverImage}
               onImageUpload={(imageUrl) =>
                 handleImageUpload("coverImage", imageUrl)

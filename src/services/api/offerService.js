@@ -77,7 +77,7 @@ export const createOffer = async (offerData) => {
   if (!shopId) {
     throw new Error("Shop ID not found");
   }
-
+  console.log(offerData);
   return apiRequest(`/shops/${shopId}/offers`, "POST", offerData);
 };
 
