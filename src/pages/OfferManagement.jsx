@@ -17,7 +17,7 @@ const OfferManagement = () => {
     discount: "",
     startDate: "",
     endDate: "",
-    imageUrl: "",
+    imageFile: null,
     category: "",
     tags: [],
   });
@@ -62,25 +62,43 @@ const OfferManagement = () => {
     fetchOffers();
   }, []);
 
-  const handleCreate = async () => {
-    console.log("Creating offer:", formData);
+  const handleCreate = async (formDataObj) => {
+    console.log("Form Data Object:", formDataObj);
     setIsSubmitting(true);
+
     try {
       setError(null);
+
+      // Create FormData object for file upload
+      const formData = new FormData();
+      formData.append("title", formDataObj.title);
+      formData.append("description", formDataObj.description);
+      formData.append("discount", formDataObj.discount);
+      formData.append("startDate", formDataObj.startDate);
+      formData.append("endDate", formDataObj.endDate);
+      formData.append("category", formDataObj.category);
+      formData.append("tags", JSON.stringify(formDataObj.tags));
+
+      if (formDataObj.imageFile) {
+        formData.append("image", formDataObj.imageFile);
+      }
+
       const response = await fetch(
         "https://closecart-backend.vercel.app/api/v1/offers/",
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify(formData),
+          body: formData,
         }
       );
-
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          console.log("ErrorData:", errorData),
+          errorData.message || `HTTP error! status: ${response.status}`
+        );
       }
 
       await fetchOffers();
@@ -94,20 +112,41 @@ const OfferManagement = () => {
     }
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (formDataObj) => {
     setIsSubmitting(true);
     try {
-      await fetch(
+      // Create FormData object for file upload
+      const formData = new FormData();
+      formData.append("title", formDataObj.title);
+      formData.append("description", formDataObj.description);
+      formData.append("discount", formDataObj.discount);
+      formData.append("startDate", formDataObj.startDate);
+      formData.append("endDate", formDataObj.endDate);
+      formData.append("category", formDataObj.category);
+      formData.append("tags", JSON.stringify(formDataObj.tags));
+
+      if (formDataObj.imageFile) {
+        formData.append("image", formDataObj.imageFile);
+      }
+
+      const response = await fetch(
         `https://closecart-backend.vercel.app/api/v1/offers/${selectedOffer._id}`,
         {
           method: "PUT",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify(formData),
+          body: formData,
         }
       );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        );
+      }
+
       await fetchOffers();
       setCurrentView("list");
       resetForm();
@@ -145,10 +184,9 @@ const OfferManagement = () => {
       discount: "",
       startDate: "",
       endDate: "",
-      imageUrl: "",
+      imageFile: null,
       category: "",
-      tags: [], // Add this for storing multiple tags
-      minPurchase: "", // Optional min purchase amount
+      tags: [],
     });
   };
 

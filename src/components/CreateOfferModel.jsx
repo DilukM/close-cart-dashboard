@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, Plus, Tag as TagIcon, Loader2 } from "lucide-react";
+import { X, Plus, Tag as TagIcon, Loader2, Upload } from "lucide-react";
 
 const CreateModal = ({
   onClose,
@@ -10,6 +10,7 @@ const CreateModal = ({
   isSubmitting = false,
 }) => {
   const [newTag, setNewTag] = useState("");
+  const [imagePreview, setImagePreview] = useState(null);
   const [availableCategories, setAvailableCategories] = useState([
     "Food",
     "Clothing",
@@ -26,6 +27,13 @@ const CreateModal = ({
     // This would be an API call in a real application
     // Example: fetchCategories().then(data => setAvailableCategories(data));
   }, []);
+
+  // Handle image preview for existing offers
+  useEffect(() => {
+    if (isEditMode && formData.imageUrl) {
+      setImagePreview(formData.imageUrl);
+    }
+  }, [isEditMode, formData.imageUrl]);
 
   const handleAddTag = () => {
     if (!newTag.trim()) return;
@@ -46,6 +54,60 @@ const CreateModal = ({
     setFormData({
       ...formData,
       tags: formData.tags.filter((tag) => tag !== tagToRemove),
+    });
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.match(/image\/(jpeg|png|jpg)/)) {
+        alert("Please select a valid image file (JPEG, PNG, or JPG)");
+        return;
+      }
+
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Image size should be less than 5MB");
+        return;
+      }
+
+      // Create a preview URL for the image
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+
+      // Update form data with the file
+      setFormData({
+        ...formData,
+        imageFile: file,
+        imageUrl: null, // Clear the imageUrl when a new file is uploaded
+      });
+    }
+  };
+
+  // Reference to the hidden file input
+  const fileInputRef = React.useRef(null);
+
+  // Function to trigger file input click
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
+  };
+
+  // Clean up the preview URL when component unmounts
+  useEffect(() => {
+    return () => {
+      if (imagePreview && imagePreview.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  const handleRemoveImage = () => {
+    setImagePreview(null);
+    setFormData({
+      ...formData,
+      imageFile: null,
+      imageUrl: null,
     });
   };
 
@@ -132,14 +194,60 @@ const CreateModal = ({
           </div>
         </div>
 
-        <input
-          placeholder="Image Url"
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
-          value={formData.imageUrl}
-          onChange={(e) =>
-            setFormData({ ...formData, imageUrl: e.target.value })
-          }
-        />
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">
+            Offer Image
+          </label>
+          <div className="flex flex-col items-center">
+            {imagePreview ? (
+              <div className="relative w-full max-w-xs mb-4">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full h-48 object-cover rounded-lg"
+                />
+                <div className="absolute bottom-2 right-2 flex space-x-2">
+                  <button
+                    onClick={triggerFileInput}
+                    className="bg-yellow-500/80 text-black px-2 py-1 text-sm rounded-lg hover:bg-yellow-500 transition-colors"
+                  >
+                    Change Image
+                  </button>
+                  <button
+                    onClick={handleRemoveImage}
+                    className="bg-gray-800/80 text-white p-1 rounded-full hover:bg-gray-700"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/jpg"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </div>
+            ) : (
+              <label className="w-full cursor-pointer">
+                <div className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-600 rounded-lg hover:border-yellow-500 transition-colors duration-300">
+                  <Upload size={24} className="text-gray-400 mb-2" />
+                  <span className="text-gray-400">Click to upload image</span>
+                  <span className="text-xs text-gray-500 mt-1">
+                    PNG, JPG or JPEG (max. 5MB)
+                  </span>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/jpg"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </div>
+        </div>
 
         <div>
           <label className="block text-xs text-gray-400 mb-1">
@@ -193,7 +301,7 @@ const CreateModal = ({
           </button>
           <button
             className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black rounded-lg transition-all duration-300 flex items-center gap-2"
-            onClick={handleSubmit}
+            onClick={() => handleSubmit(formData)}
             disabled={isSubmitting}
           >
             {isSubmitting ? (
