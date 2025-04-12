@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Plus, Tag as TagIcon, Loader2, Upload } from "lucide-react";
+import PropTypes from 'prop-types';
 
 const CreateModal = ({
   onClose,
@@ -160,12 +161,11 @@ const CreateModal = ({
             <span className="text-sm text-gray-400">Tags</span>
           </div>
           <div className="flex flex-wrap gap-2 mb-2">
-            {formData.tags &&
-              formData.tags.map((tag) => (
-                <div
-                  key={tag}
-                  className="flex items-center bg-yellow-500/30 text-yellow-300 text-sm rounded-full px-3 py-1"
-                >
+            {(formData.tags || []).map((tag) => (
+              <div
+                key={tag}
+                className="flex items-center bg-yellow-500/30 text-yellow-300 text-sm rounded-full px-3 py-1"
+              >
                   {tag}
                   <button
                     onClick={() => handleRemoveTag(tag)}
@@ -317,6 +317,24 @@ const CreateModal = ({
       </div>
     </div>
   );
+};
+CreateModal.propTypes = {
+  onClose: PropTypes.func.isRequired,
+  formData: PropTypes.shape({
+    title: PropTypes.string,
+    category: PropTypes.string,
+    description: PropTypes.string,
+    tags: PropTypes.arrayOf(PropTypes.string),
+    imageUrl: PropTypes.string,
+    discount: PropTypes.string,
+    startDate: PropTypes.string,
+    endDate: PropTypes.string,
+    imageFile: PropTypes.object,
+  }).isRequired,
+  setFormData: PropTypes.func.isRequired,
+  handleSubmit: PropTypes.func.isRequired,
+  isEditMode: PropTypes.bool,
+  isSubmitting: PropTypes.bool,
 };
 
 export default CreateModal;
