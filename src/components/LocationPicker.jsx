@@ -47,6 +47,22 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
     }
   }, [location]);
 
+  // Fetch address for initial location when component mounts
+  useEffect(() => {
+    const fetchInitialAddress = async () => {
+      if (initialLocation) {
+        try {
+          const addressString = await getAddressFromCoords(initialLocation);
+          setAddress(addressString);
+        } catch (error) {
+          console.error("Error fetching initial address:", error);
+        }
+      }
+    };
+
+    fetchInitialAddress();
+  }, [initialLocation]);
+
   // Create debounced search function
   const debouncedSearch = useRef(
     debounce(async (query) => {
@@ -230,27 +246,25 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
         />
       </div>
 
-      {/* Current address display */}
-      {location && (
-        <div className="mt-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
-          <div className="flex items-start gap-2">
-            <MapPin className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-1" />
-            <div>
-              <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Selected Location
-              </span>
-              <span className="text-gray-600 dark:text-gray-400 text-sm">
-                {address}
-              </span>
-              {location && (
-                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                  Lat: {location.lat.toFixed(6)}, Lng: {location.lng.toFixed(6)}
-                </p>
-              )}
-            </div>
+      {/* Current address display - now always visible */}
+      <div className="mt-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
+        <div className="flex items-start gap-2">
+          <MapPin className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-1" />
+          <div>
+            <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Selected Location
+            </span>
+            <span className="text-gray-600 dark:text-gray-400 text-sm">
+              {address || "No location selected"}
+            </span>
+            {location && (
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                Lat: {location.lat.toFixed(6)}, Lng: {location.lng.toFixed(6)}
+              </p>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
