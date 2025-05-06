@@ -286,7 +286,7 @@ const ProfileSettings = () => {
         coverImage: profileData.coverImage,
       };
 
-      const data = await updateShop("", shopData);
+      const data = await updateShop("images", shopData);
 
       if (data.success) {
         // Update initial state after successful save
