@@ -231,7 +231,7 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
       </div>
 
       {/* Current address display */}
-      {address && (
+      {location && (
         <div className="mt-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
           <div className="flex items-start gap-2">
             <MapPin className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-1" />
