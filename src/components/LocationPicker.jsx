@@ -61,9 +61,11 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
   // Fetch address for initial location when component mounts
   useEffect(() => {
     const fetchInitialAddress = async () => {
-      if (initialLocation) {
+      if (formattedInitialLocation) {
         try {
-          const addressString = await getAddressFromCoords(initialLocation);
+          const addressString = await getAddressFromCoords(
+            formattedInitialLocation
+          );
           setAddress(addressString);
         } catch (error) {
           console.error("Error fetching initial address:", error);
@@ -72,7 +74,7 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
     };
 
     fetchInitialAddress();
-  }, [initialLocation]);
+  }, [formattedInitialLocation]);
 
   // Create debounced search function
   const debouncedSearch = useRef(
