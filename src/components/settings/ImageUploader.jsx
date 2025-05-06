@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Upload, X, Image } from "lucide-react";
 import { toast } from "react-toastify";
 import { getCurrentShopId } from "../../services/api/shopService";
