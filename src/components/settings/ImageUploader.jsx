@@ -41,7 +41,7 @@ const ImageUploader = ({
     // In a real app, upload to server/cloud storage
     setIsUploading(true);
     try {
-      const baseUrl = "https://closecart-backend.vercel.app/api/v1"; // Replace with your actual base URL
+      const baseUrl = "https://closecart-backend.vercel.app/api/v1/shops"; // Replace with your actual base URL
       const endpoint = `${baseUrl}/${shopId}/${
         imageType === "logo" ? "logo" : "cover-image"
       }`;
