@@ -83,7 +83,7 @@ const ImageUploader = ({
 
   const removeImage = () => {
     setPreviewUrl(null);
-    onImageUpload(null);
+    onImageUpload("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
