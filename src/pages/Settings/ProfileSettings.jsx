@@ -450,14 +450,15 @@ const ProfileSettings = () => {
               className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
             >
               <option value="">Select a category</option>
-              <option value="retail">Retail</option>
-              <option value="food">Food & Beverage</option>
-              <option value="services">Services</option>
-              <option value="technology">Technology</option>
-              <option value="fashion">Fashion</option>
-              <option value="health">Health & Wellness</option>
-              <option value="entertainment">Entertainment</option>
-              <option value="other">Other</option>
+              <option value="Retail">Retail</option>
+              <option value="Food">Food</option>
+              <option value="Services">Services</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Fashion">Fashion</option>
+              <option value="Health">Health</option>
+              <option value="Beauty">Beauty</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Other">Other</option>
             </select>
           </div>
         </div>
