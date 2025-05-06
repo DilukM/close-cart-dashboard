@@ -503,7 +503,7 @@ const ProfileSettings = () => {
               Cover Image
             </label>
             <ImageUploader
-              imageType="cover-image"
+              imageType="coverImage"
               currentImage={profileData.coverImage}
               onImageUpload={(imageUrl) =>
                 handleImageUpload("coverImage", imageUrl)

@@ -47,7 +47,7 @@ const ImageUploader = ({
       }`;
 
       const formData = new FormData();
-      formData.append("image", file);
+      formData.append(imageType, file);
 
       const token = localStorage.getItem("token");
 
