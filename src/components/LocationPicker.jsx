@@ -12,7 +12,8 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const resultsContainerRef = useRef(null);
-
+  console.log("LocationPicker ", initialLocation);
+  console.log("LocationPicker location ", location);
   // Handle clicks outside search results to close dropdown
   useEffect(() => {
     function handleClickOutside(event) {
