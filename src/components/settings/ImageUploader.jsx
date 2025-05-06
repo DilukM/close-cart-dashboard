@@ -118,6 +118,7 @@ const ImageUploader = ({
               }}
               alt="Uploaded preview"
               className="absolute top-0 left-0 w-full h-full object-cover"
+              style={{ maxHeight: "300px" }}
             />
           </div>
           <div className="absolute top-2 right-2 flex space-x-2">
