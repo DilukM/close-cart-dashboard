@@ -215,7 +215,7 @@ const ProfileSettings = () => {
     console.log("Image URL:", imageUrl);
     setProfileData((prev) => ({
       ...prev,
-      [type]: imageUrl,
+      [type]: type==logo? imageUrl.logoUrl : imageUrl.coverImageUrl,
     }));
   };
 
