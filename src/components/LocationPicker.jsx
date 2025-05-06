@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { MapPin, Navigation, Search, X } from "lucide-react";
+import { MapPin, Navigation, Search, X, Loader2 } from "lucide-react";
 import Map from "./Map";
 import { getCurrentLocation, getAddressFromCoords } from "../utils/MapHelper";
 import debounce from "lodash/debounce";
