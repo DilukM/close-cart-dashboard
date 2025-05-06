@@ -5,7 +5,13 @@ import { getCurrentLocation, getAddressFromCoords } from "../utils/MapHelper";
 import debounce from "lodash/debounce";
 
 const LocationPicker = ({ initialLocation, onLocationChange }) => {
-  const [location, setLocation] = useState(initialLocation || null);
+  const formattedInitialLocation = initialLocation
+    ? {
+        lat: initialLocation.latitude || initialLocation.lat,
+        lng: initialLocation.longitude || initialLocation.lng,
+      }
+    : null;
+  const [location, setLocation] = useState(formattedInitialLocation || null);
   const [address, setAddress] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
