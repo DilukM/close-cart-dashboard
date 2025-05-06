@@ -22,6 +22,8 @@ const AuthPage = () => {
     password: "",
     phone: "",
     shopName: "",
+    category: "",
+    location: "",
     shopAddress: "",
   });
 
@@ -167,6 +169,35 @@ const AuthPage = () => {
                       className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors duration-200"
                       placeholder="Your Shop Name"
                     />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                    Category
+                  </label>
+                  <div className="mt-1 relative">
+                    <Store className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <select
+                      name="category"
+                      required
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors duration-200"
+                      placeholder="Your Shop Category"
+                    >
+                      <option value="" disabled>
+                        Select Shop Category
+                      </option>
+                      <option value="food">Food</option>
+                      <option value="retail">Retail</option>
+                      <option value="services">Services</option>
+                      <option value="entertainment">Entertainment</option>
+                      <option value="health">Health</option>
+                      <option value="beauty">Beauty</option>
+                      <option value="electronics">Electronics</option>
+                      <option value="fashion">Fashion</option>
+                      <option value="other">Other</option>
+                    </select>
                   </div>
                 </div>
 

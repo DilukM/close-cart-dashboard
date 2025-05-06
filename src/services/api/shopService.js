@@ -53,12 +53,12 @@ export const getShopLocation = async () => {
 /**
  * Update shop basic info
  */
-export const updateShop = async (shopData) => {
+export const updateShop = async (endpoint, shopData) => {
   const shopId = getCurrentShopId();
   if (!shopId) {
     throw new Error("Shop ID not found");
   }
 
 
-  return apiRequest(`/shops/${shopId}`, "PUT", shopData);
+  return apiRequest(`/shops/${shopId}/${endpoint}`, "PUT", shopData);
 };

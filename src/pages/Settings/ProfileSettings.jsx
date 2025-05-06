@@ -12,9 +12,7 @@ import SettingsSection from "../../components/settings/SettingsSection";
 import LocationPicker from "../../components/LocationPicker";
 import BusinessHoursEditor from "../../components/settings/BusinessHoursEditor";
 import ImageUploader from "../../components/settings/ImageUploader";
-import {
-  getShopLocation,
-} from "../../services/api/shopService";
+import { getShopLocation, updateShop } from "../../services/api/shopService";
 
 const ProfileSettings = () => {
   // Initial state to compare against for changes
@@ -229,7 +227,7 @@ const ProfileSettings = () => {
         category: profileData.category,
       };
 
-      const data = await updateShop(shopData);
+      const data = await updateShop("/", shopData);
 
       if (data.success) {
         // Update initial state after successful save
@@ -259,7 +257,7 @@ const ProfileSettings = () => {
         businessHours: profileData.businessHours,
       };
 
-      const data = await updateShop(shopData);
+      const data = await updateShop("business-hours", shopData);
 
       if (data.success) {
         // Update initial state after successful save
@@ -288,7 +286,7 @@ const ProfileSettings = () => {
         coverImage: profileData.coverImage,
       };
 
-      const data = await updateShop(shopData);
+      const data = await updateShop("cover-image", shopData);
 
       if (data.success) {
         // Update initial state after successful save
@@ -378,7 +376,7 @@ const ProfileSettings = () => {
         location: profileData.location,
       };
 
-      const data = await updateShop(locationData);
+      const data = await updateShop("location", locationData);
 
       if (data.success) {
         // Update initial state after successful save
@@ -493,7 +491,7 @@ const ProfileSettings = () => {
               Logo
             </label>
             <ImageUploader
-            imageType="logo"
+              imageType="logo"
               currentImage={profileData.logo}
               onImageUpload={(imageUrl) => handleImageUpload("logo", imageUrl)}
               aspectRatio={1}
@@ -504,7 +502,7 @@ const ProfileSettings = () => {
               Cover Image
             </label>
             <ImageUploader
-            imageType="cover-image"
+              imageType="cover-image"
               currentImage={profileData.coverImage}
               onImageUpload={(imageUrl) =>
                 handleImageUpload("coverImage", imageUrl)
