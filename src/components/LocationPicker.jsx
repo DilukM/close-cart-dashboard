@@ -15,15 +15,12 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
   const [address, setAddress] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isAddressLoading, setIsAddressLoading] = useState(false); // New state for address loading
+
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const resultsContainerRef = useRef(null);
-  console.log("LocationPicker ", initialLocation);
-  console.log(
-    "LocationPicker formattedInitialLocation ",
-    formattedInitialLocation
-  );
-  console.log("LocationPicker location ", location);
+
   // Handle clicks outside search results to close dropdown
   useEffect(() => {
     function handleClickOutside(event) {
@@ -46,11 +43,14 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
   useEffect(() => {
     if (location) {
       const fetchAddress = async () => {
+        setIsAddressLoading(true);
         try {
           const addressString = await getAddressFromCoords(location);
           setAddress(addressString);
         } catch (error) {
           console.error("Error fetching address:", error);
+        } finally {
+          setIsAddressLoading(false); // End loading
         }
       };
 
@@ -62,6 +62,7 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
   useEffect(() => {
     const fetchInitialAddress = async () => {
       if (formattedInitialLocation) {
+        setIsAddressLoading(true);
         try {
           const addressString = await getAddressFromCoords(
             formattedInitialLocation
@@ -69,6 +70,8 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
           setAddress(addressString);
         } catch (error) {
           console.error("Error fetching initial address:", error);
+        } finally {
+          setIsAddressLoading(false); // End loading
         }
       }
     };
@@ -259,17 +262,24 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
         />
       </div>
 
-      {/* Current address display - now always visible */}
+      {/* Current address display*/}
       <div className="mt-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
         <div className="flex items-start gap-2">
           <MapPin className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-1" />
-          <div>
+          <div className="flex-1">
             <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Selected Location
             </span>
-            <span className="text-gray-600 dark:text-gray-400 text-sm">
-              {address || "No location selected"}
-            </span>
+            {isAddressLoading ? (
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm">Fetching address...</span>
+              </div>
+            ) : (
+              <span className="text-gray-600 dark:text-gray-400 text-sm">
+                {address || "No location selected"}
+              </span>
+            )}
             {location && (
               <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                 Lat: {location.lat.toFixed(6)}, Lng: {location.lng.toFixed(6)}
