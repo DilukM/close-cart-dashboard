@@ -11,7 +11,7 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
         lng: initialLocation.longitude || initialLocation.lng,
       }
     : null;
-  const [location, setLocation] = useState(formattedInitialLocation || null);
+  const [location, setLocation] = useState(formattedInitialLocation);
   const [address, setAddress] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
