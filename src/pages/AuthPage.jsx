@@ -187,15 +187,15 @@ const AuthPage = () => {
                       <option value="" disabled>
                         Select Shop Category
                       </option>
-                      <option value="food">Food</option>
-                      <option value="retail">Retail</option>
-                      <option value="services">Services</option>
-                      <option value="entertainment">Entertainment</option>
-                      <option value="health">Health</option>
-                      <option value="beauty">Beauty</option>
-                      <option value="electronics">Electronics</option>
-                      <option value="fashion">Fashion</option>
-                      <option value="other">Other</option>
+                      <option value="Food">Food</option>
+                      <option value="Retail">Retail</option>
+                      <option value="Services">Services</option>
+                      <option value="Entertainment">Entertainment</option>
+                      <option value="Health">Health</option>
+                      <option value="Beauty">Beauty</option>
+                      <option value="Electronics">Electronics</option>
+                      <option value="Fashion">Fashion</option>
+                      <option value="Other">Other</option>
                     </select>
                   </div>
                 </div>
