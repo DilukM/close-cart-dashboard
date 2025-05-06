@@ -104,11 +104,15 @@ const ImageUploader = ({
         className="hidden"
       />
 
-      {previewUrl ? (
+      {previewUrl || currentImage ? (
         <div className="relative rounded-xl overflow-hidden border-2 border-gray-300 dark:border-gray-600">
           <div className="w-full relative" style={aspectRatioStyles}>
             <img
-              src={previewUrl}
+              src={currentImage || previewUrl}
+              onError={(e) => {
+                e.target.onerror = null; // Prevents looping
+                e.target.src = "https://via.placeholder.com/150"; // Placeholder image
+              }}
               alt="Uploaded preview"
               className="absolute top-0 left-0 w-full h-full object-cover"
             />
