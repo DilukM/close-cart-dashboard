@@ -9,6 +9,7 @@ const ImageUploader = ({
   aspectRatio = 1,
   imageType = "logo",
 }) => {
+  console.log("ImageUploader rendered with currentImage:", currentImage);
   const [previewUrl, setPreviewUrl] = useState(currentImage);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
