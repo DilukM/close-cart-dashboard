@@ -9,10 +9,13 @@ const ImageUploader = ({
   aspectRatio = 1,
   imageType = "logo",
 }) => {
-  console.log("ImageUploader rendered with currentImage:", currentImage);
   const [previewUrl, setPreviewUrl] = useState(currentImage);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    setPreviewUrl(currentImage);
+  }, [currentImage]);
 
   const handleFileChange = async (e) => {
     const shopId = getCurrentShopId();
@@ -104,11 +107,11 @@ const ImageUploader = ({
         className="hidden"
       />
 
-      {previewUrl || currentImage ? (
+      {previewUrl ? (
         <div className="relative rounded-xl overflow-hidden border-2 border-gray-300 dark:border-gray-600">
           <div className="w-full relative" style={aspectRatioStyles}>
             <img
-              src={currentImage || previewUrl}
+              src={previewUrl}
               onError={(e) => {
                 e.target.onerror = null; // Prevents looping
                 e.target.src = "https://via.placeholder.com/150"; // Placeholder image
