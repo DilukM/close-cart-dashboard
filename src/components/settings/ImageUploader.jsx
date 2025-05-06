@@ -109,13 +109,7 @@ const ImageUploader = ({
 
       {previewUrl ? (
         <div className="relative rounded-xl overflow-hidden border-2 border-gray-300 dark:border-gray-600">
-          <div
-            className="w-full relative"
-            style={{
-              maxHeight: "300px",
-              height: "auto",
-            }}
-          >
+          <div className="w-full relative" style={aspectRatioStyles}>
             <img
               src={previewUrl}
               onError={(e) => {
@@ -124,10 +118,6 @@ const ImageUploader = ({
               }}
               alt="Uploaded preview"
               className="absolute top-0 left-0 w-full h-full object-cover"
-              style={{
-                maxHeight: "300px",
-                aspectRatio: aspectRatio,
-              }}
             />
           </div>
           <div className="absolute top-2 right-2 flex space-x-2">
