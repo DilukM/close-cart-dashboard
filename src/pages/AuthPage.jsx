@@ -23,7 +23,6 @@ const AuthPage = () => {
     phone: "",
     shopName: "",
     category: "",
-  
     shopAddress: "",
   });
 
