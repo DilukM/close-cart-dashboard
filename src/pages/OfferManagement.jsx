@@ -437,7 +437,7 @@ const OfferManagement = () => {
                     {selectedOffer.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="bg-yellow-500/30 text-yellow-300 text-xs sm:text-sm rounded-full px-2 sm:px-3 py-1"
+                        className="bg-yellow-500/30 dark:text-yellow-300 text-gray-300 text-xs sm:text-sm rounded-full px-2 sm:px-3 py-1"
                       >
                         {tag}
                       </span>
