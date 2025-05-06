@@ -212,6 +212,7 @@ const ProfileSettings = () => {
   };
 
   const handleImageUpload = (type, imageUrl) => {
+    console.log("Image URL:", imageUrl);
     setProfileData((prev) => ({
       ...prev,
       [type]: imageUrl,
@@ -285,7 +286,7 @@ const ProfileSettings = () => {
         logo: profileData.logo,
         coverImage: profileData.coverImage,
       };
-
+console.log("Shop Data:", shopData);
       const data = await updateShop("images", shopData);
 
       if (data.success) {
