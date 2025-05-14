@@ -117,29 +117,31 @@ const showWarningToast = (message) => {
  * @param {Object} location - The location object with lat and lng properties
  * @returns {Promise} A promise that resolves with the address string
  */
+/**
+ * Converts coordinates to an address using your backend API proxy for OpenStreetMap's Nominatim 
+ * @param {Object} location - The location object with lat and lng properties
+ * @returns {Promise} A promise that resolves with the address string
+ */
 export const getAddressFromCoords = async (location) => {
   try {
-    // Make sure to follow Nominatim usage policy:
-    // 1. Add meaningful user agent
-    // 2. Maximum 1 request per second
+    // Use backend proxy API instead of direct call to Nominatim
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.lat}&lon=${location.lng}&zoom=18&addressdetails=1`,
+      `https://closecart-backend.vercel.app/api/v1/geocoding/reverse?lat=${location.lat}&lng=${location.lng}`,
       {
         headers: {
-          "Accept-Language": "en",
-          "User-Agent": "CloseCart Dashboard Application", // Identify your application
+          "Accept": "application/json",
         },
       }
     );
 
     if (!response.ok) {
-      throw new Error("Network response was not ok");
+      throw new Error(`Network response was not ok: ${response.status}`);
     }
 
     const data = await response.json();
 
-    if (data && data.display_name) {
-      return data.display_name;
+    if (data.success && data.address) {
+      return data.address;
     }
     return "Address not found";
   } catch (error) {
@@ -149,36 +151,30 @@ export const getAddressFromCoords = async (location) => {
 };
 
 /**
- * Converts an address to coordinates using OpenStreetMap's Nominatim geocoding
+ * Converts an address to coordinates using your backend API proxy for OpenStreetMap's Nominatim
  * @param {String} address - The address to geocode
  * @returns {Promise} A promise that resolves with the coordinates {lat, lng}
  */
 export const getCoordsFromAddress = async (address) => {
   try {
-    // Make sure to follow Nominatim usage policy
+    // Use backend proxy API instead of direct call to Nominatim
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-        address
-      )}&limit=1`,
+      `https://closecart-backend.vercel.app/api/v1/geocoding/forward?address=${encodeURIComponent(address)}`,
       {
         headers: {
-          "Accept-Language": "en",
-          "User-Agent": "CloseCart Dashboard Application", // Identify your application
+          "Accept": "application/json",
         },
       }
     );
 
     if (!response.ok) {
-      throw new Error("Network response was not ok");
+      throw new Error(`Network response was not ok: ${response.status}`);
     }
 
     const data = await response.json();
 
-    if (data && data.length > 0) {
-      return {
-        lat: parseFloat(data[0].lat),
-        lng: parseFloat(data[0].lon),
-      };
+    if (data.success && data.location) {
+      return data.location; // Already in {lat, lng} format
     }
     throw new Error("Location not found");
   } catch (error) {
