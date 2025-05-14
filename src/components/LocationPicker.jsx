@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MapPin, Navigation, Search, X, Loader2 } from "lucide-react";
 import Map from "./Map";
-import { getCurrentLocation, getAddressFromCoords, getCoordsFromAddress } from "../utils/MapHelper";
-import debounce from "lodash/debounce";
+import { getCurrentLocation, getAddressFromCoords, getCoordsFromAddress, throttle } from "../utils/MapHelper";
 
 const LocationPicker = ({ initialLocation, onLocationChange }) => {
   const formattedInitialLocation = initialLocation
@@ -16,6 +15,9 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isAddressLoading, setIsAddressLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false); // Track if search is in progress
+  const [requestInProgress, setRequestInProgress] = useState(false); // Mutex-like state
+  const searchTimeoutRef = useRef(null);
 
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
@@ -82,14 +84,15 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
     fetchInitialAddress();
   }, [formattedInitialLocation]);
 
-  // Create improved search function with request cancellation
+  // Strictly controlled search function that ensures only one request at a time
   const searchLocations = async (query) => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      setShowResults(false);
+    if (!query.trim() || requestInProgress) {
       return;
     }
 
+    // Set mutex lock
+    setRequestInProgress(true);
+    
     // Cancel any previous request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -101,30 +104,17 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
 
     setIsLoading(true);
     try {
-      // Use our backend API proxy instead of direct Nominatim calls
-      const response = await fetch(
-        `https://closecart-backend.vercel.app/api/v1/geocoding/forward?address=${encodeURIComponent(
-          query
-        )}&limit=5`,
-        {
-          headers: {
-            "Accept": "application/json",
-          },
-          signal, // Pass the abort signal to fetch
-        }
-      );
-
-      if (signal.aborted) return; // Don't process results if request was aborted
+      console.log("Sending geocoding request for:", query);
       
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+      // Use cached and throttled function from MapHelper
+      const data = await getCoordsFromAddress(query);
+      
+      if (!data || signal.aborted) {
+        return;
       }
 
-      const data = await response.json();
-
-      if (signal.aborted) return; // Check again after json parsing
-
-      if (data.success && data.results && data.results.length > 0) {
+      // Process results
+      if (data.results && data.results.length > 0) {
         setSearchResults(
           data.results.map((result) => ({
             id: result.place_id || `${result.lat}_${result.lng}`,
@@ -148,14 +138,17 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
       if (!signal.aborted) {
         setIsLoading(false);
       }
+      // Release mutex lock
+      setRequestInProgress(false);
     }
   };
 
-  // Create debounced search function
-  const debouncedSearch = useRef(
-    debounce((query) => {
+  // Simple throttled trigger that prevents rapid fire calls
+  const throttledSearch = useRef(
+    throttle((query) => {
+      console.log("Throttled search triggered for:", query);
       searchLocations(query);
-    }, 800)
+    }, 1000) // Only allow one call per second
   ).current;
 
   // Clean up on component unmount
@@ -165,10 +158,12 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-      // Cancel any debounced calls waiting to execute
-      debouncedSearch.cancel();
+      // Clear any pending timeouts
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
     };
-  }, [debouncedSearch]);
+  }, []);
 
   // Handle location change from map
   const handleLocationChange = (newLocation) => {
@@ -191,17 +186,17 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
     }
   };
 
-  // Handle search input change
+  // Handle search input change - now only updates the query without auto-searching
   const handleSearchInputChange = (e) => {
     const value = e.target.value;
     setSearchQuery(value);
-    
-    // Cancel previous search if it's still pending
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+  };
+
+  // Explicit search button handler for manual searches only
+  const handleSearch = () => {
+    if (searchQuery.trim() && !requestInProgress) {
+      throttledSearch(searchQuery);
     }
-    
-    debouncedSearch(value);
   };
 
   // Select a search result
@@ -226,7 +221,7 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
             Search Location
           </label>
         </div>
-        <div className="relative flex">
+        <div className="relative flex gap-2">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
@@ -235,6 +230,12 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
               onChange={handleSearchInputChange}
               placeholder="Search for a location"
               className="w-full pl-10 pr-10 py-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-800 dark:text-white focus:outline-none focus:border-yellow-500 transition-colors"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSearch();
+                }
+              }}
             />
             {searchQuery && (
               <button
@@ -249,6 +250,17 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
               </button>
             )}
           </div>
+          <button
+            onClick={handleSearch}
+            disabled={isLoading || !searchQuery.trim()}
+            className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              "Search"
+            )}
+          </button>
         </div>
 
         {/* Search results dropdown - Using fixed positioning for guaranteed overlay */}
