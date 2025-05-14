@@ -5,6 +5,7 @@ import { getCurrentLocation, getAddressFromCoords } from "../utils/MapHelper";
 import debounce from "lodash/debounce";
 
 const LocationPicker = ({ initialLocation, onLocationChange }) => {
+  console.log("LocationPicker component rendered", initialLocation);
   const formattedInitialLocation = initialLocation
     ? {
         lat: initialLocation.latitude || initialLocation.lat,
