@@ -117,34 +117,43 @@ const showWarningToast = (message) => {
  * @param {Object} location - The location object with lat and lng properties
  * @returns {Promise} A promise that resolves with the address string
  */
-export const getAddressFromCoords = async (location) => {
+export const getAddressFromCoords = async (coords) => {
+  // Add timeout to prevent hanging requests
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+
   try {
-    // Make sure to follow Nominatim usage policy:
-    // 1. Add meaningful user agent
-    // 2. Maximum 1 request per second
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.lat}&lon=${location.lng}&zoom=18&addressdetails=1`,
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&addressdetails=1`,
       {
         headers: {
           "Accept-Language": "en",
-          "User-Agent": "CloseCart Dashboard Application", // Identify your application
+          "User-Agent": "CloseCart Dashboard",
         },
+        signal: controller.signal,
       }
     );
 
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
-      throw new Error("Network response was not ok");
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
     const data = await response.json();
-
-    if (data && data.display_name) {
-      return data.display_name;
-    }
-    return "Address not found";
+    return (
+      data.display_name ||
+      `Location (${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)})`
+    );
   } catch (error) {
-    console.error("Error fetching address:", error);
-    return "Error fetching address";
+    // Check if it's an abort error (timeout)
+    if (error.name === "AbortError") {
+      throw new Error(
+        "Request timeout - the geocoding service took too long to respond"
+      );
+    }
+
+    throw error;
   }
 };
 
