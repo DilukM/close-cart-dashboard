@@ -118,13 +118,14 @@ const showWarningToast = (message) => {
  * @returns {Promise} A promise that resolves with the address string
  */
 export const getAddressFromCoords = async (coords) => {
-  // Add timeout to prevent hanging requests
+  // Increase timeout to 10 seconds
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000);
-
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  
   try {
+    // First try Nominatim
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&addressdetails=1`,
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&addressdetails=1&zoom=18`,
       {
         headers: {
           "Accept-Language": "en",
@@ -135,26 +136,32 @@ export const getAddressFromCoords = async (coords) => {
     );
 
     clearTimeout(timeoutId);
-
+    
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
-
+    
     const data = await response.json();
-    return (
-      data.display_name ||
-      `Location (${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)})`
-    );
+    return data.display_name || formatCoordinates(coords);
+    
   } catch (error) {
-    // Check if it's an abort error (timeout)
+    // Clear timeout if there was an error
+    clearTimeout(timeoutId);
+    
     if (error.name === "AbortError") {
-      throw new Error(
-        "Request timeout - the geocoding service took too long to respond"
-      );
+      console.warn("Geocoding request timed out, falling back to coordinates display");
+      return formatCoordinates(coords);
     }
-
-    throw error;
+    
+    // If network error, simply return formatted coordinates instead of throwing
+    console.warn("Geocoding request failed, using coordinates instead:", error);
+    return formatCoordinates(coords);
   }
+};
+
+// Helper function to format coordinates for display
+const formatCoordinates = (coords) => {
+  return `Location (${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)})`;
 };
 
 /**
@@ -249,8 +256,26 @@ export const createGeoCache = (fn, ttl = 24 * 60 * 60 * 1000) => {
 };
 
 // Apply throttling and caching to the geocoding functions
+export const isOnline = () => {
+  return navigator.onLine;
+};
+
+// Then update the getCachedAddressFromCoords function to handle offline cases
 export const getCachedAddressFromCoords = createGeoCache(
-  throttle(getAddressFromCoords, 1100)
+  throttle(async (coords) => {
+    // Check if online first
+    if (!isOnline()) {
+      return formatCoordinates(coords);
+    }
+    
+    try {
+      const address = await getAddressFromCoords(coords);
+      return address;
+    } catch (error) {
+      console.warn("Error in cached address lookup:", error);
+      return formatCoordinates(coords);
+    }
+  }, 1100)
 );
 
 export const getCachedCoordsFromAddress = createGeoCache(
