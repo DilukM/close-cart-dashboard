@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MapPin, Navigation, Search, X, Loader2 } from "lucide-react";
 import Map from "./Map";
-import {
-  getCurrentLocation,
-  getCachedAddressFromCoords, // Use the cached version instead
-  getAddressFromCoords,
-} from "../utils/MapHelper";
+import { getCurrentLocation, getAddressFromCoords } from "../utils/MapHelper";
 import debounce from "lodash/debounce";
 
 const LocationPicker = ({ initialLocation, onLocationChange }) => {
@@ -49,17 +45,12 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
       const fetchAddress = async () => {
         setIsAddressLoading(true);
         try {
-          // Use the cached version of the function
-          const addressString = await getCachedAddressFromCoords(location);
+          const addressString = await getAddressFromCoords(location);
           setAddress(addressString);
         } catch (error) {
           console.error("Error fetching address:", error);
-          // Add fallback when address fetch fails
-          setAddress(
-            `Location (${location.lat.toFixed(6)}, ${location.lng.toFixed(6)})`
-          );
         } finally {
-          setIsAddressLoading(false);
+          setIsAddressLoading(false); // End loading
         }
       };
 
@@ -73,20 +64,14 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
       if (formattedInitialLocation) {
         setIsAddressLoading(true);
         try {
-          // Use the cached version of the function
-          const addressString = await getCachedAddressFromCoords(
+          const addressString = await getAddressFromCoords(
             formattedInitialLocation
           );
           setAddress(addressString);
         } catch (error) {
           console.error("Error fetching initial address:", error);
-          setAddress(
-            `Location (${formattedInitialLocation.lat.toFixed(
-              6
-            )}, ${formattedInitialLocation.lng.toFixed(6)})`
-          );
         } finally {
-          setIsAddressLoading(false);
+          setIsAddressLoading(false); // End loading
         }
       }
     };
