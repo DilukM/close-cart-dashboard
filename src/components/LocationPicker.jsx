@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MapPin, Navigation, Search, X, Loader2 } from "lucide-react";
 import Map from "./Map";
-import { getCurrentLocation, getAddressFromCoords } from "../utils/MapHelper";
+import { getCurrentLocation, getAddressFromCoords, getCoordsFromAddress } from "../utils/MapHelper";
 import debounce from "lodash/debounce";
 
 const LocationPicker = ({ initialLocation, onLocationChange }) => {
@@ -15,11 +15,14 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
   const [address, setAddress] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isAddressLoading, setIsAddressLoading] = useState(false); // New state for address loading
+  const [isAddressLoading, setIsAddressLoading] = useState(false);
 
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const resultsContainerRef = useRef(null);
+  
+  // Reference to store the current abort controller
+  const abortControllerRef = useRef(null);
 
   // Handle clicks outside search results to close dropdown
   useEffect(() => {
@@ -50,7 +53,7 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
         } catch (error) {
           console.error("Error fetching address:", error);
         } finally {
-          setIsAddressLoading(false); // End loading
+          setIsAddressLoading(false);
         }
       };
 
@@ -71,7 +74,7 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
         } catch (error) {
           console.error("Error fetching initial address:", error);
         } finally {
-          setIsAddressLoading(false); // End loading
+          setIsAddressLoading(false);
         }
       }
     };
@@ -79,64 +82,90 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
     fetchInitialAddress();
   }, [formattedInitialLocation]);
 
-  // Create debounced search function
-  const debouncedSearch = useRef(
-    debounce(async (query) => {
-      if (!query.trim()) {
+  // Create improved search function with request cancellation
+  const searchLocations = async (query) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setShowResults(false);
+      return;
+    }
+
+    // Cancel any previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new abort controller
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
+    setIsLoading(true);
+    try {
+      // Use our backend API proxy instead of direct Nominatim calls
+      const response = await fetch(
+        `https://closecart-backend.vercel.app/api/v1/geocoding/forward?address=${encodeURIComponent(
+          query
+        )}&limit=5`,
+        {
+          headers: {
+            "Accept": "application/json",
+          },
+          signal, // Pass the abort signal to fetch
+        }
+      );
+
+      if (signal.aborted) return; // Don't process results if request was aborted
+      
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+
+      if (signal.aborted) return; // Check again after json parsing
+
+      if (data.success && data.results && data.results.length > 0) {
+        setSearchResults(
+          data.results.map((result) => ({
+            id: result.place_id || `${result.lat}_${result.lng}`,
+            address: result.display_name,
+            location: {
+              lat: parseFloat(result.lat),
+              lng: parseFloat(result.lng),
+            },
+          }))
+        );
+        setShowResults(true);
+      } else {
         setSearchResults([]);
         setShowResults(false);
-        return;
       }
-
-      setIsLoading(true);
-      try {
-        // Use Nominatim API for geocoding 
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-            query
-          )}&limit=5`,
-          {
-            headers: {
-              "Accept-Language": "en", // Prefer English results
-              "User-Agent": "CloseCart Dashboard", // Identify app as required by OSM policy
-            },
-          }
-        );
-
-        // Check if component is still mounted before updating state
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-
-        const data = await response.json();
-
-        if (data && data.length > 0) {
-          setSearchResults(
-            data.map((result) => ({
-              id: result.place_id,
-              address: result.display_name,
-              location: {
-                lat: parseFloat(result.lat),
-                lng: parseFloat(result.lon),
-              },
-            }))
-          );
-          setShowResults(true);
-        } else {
-          setSearchResults([]);
-          setShowResults(false);
-        }
-      } catch (error) {
+    } catch (error) {
+      if (error.name !== 'AbortError') {
         console.error("Error searching for location:", error);
-      } finally {
+      }
+    } finally {
+      if (!signal.aborted) {
         setIsLoading(false);
       }
-    }, 500)
+    }
+  };
+
+  // Create debounced search function
+  const debouncedSearch = useRef(
+    debounce((query) => {
+      searchLocations(query);
+    }, 800)
   ).current;
 
-  // Clean up debounced function on unmount
+  // Clean up on component unmount
   useEffect(() => {
     return () => {
+      // Cancel any ongoing fetch request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      // Cancel any debounced calls waiting to execute
       debouncedSearch.cancel();
     };
   }, [debouncedSearch]);
@@ -166,6 +195,12 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
   const handleSearchInputChange = (e) => {
     const value = e.target.value;
     setSearchQuery(value);
+    
+    // Cancel previous search if it's still pending
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
     debouncedSearch(value);
   };
 
