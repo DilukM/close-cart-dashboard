@@ -9,12 +9,19 @@ const ImageUploader = ({
   aspectRatio = 1,
   imageType = "logo",
 }) => {
-  const [previewUrl, setPreviewUrl] = useState(currentImage);
+  // Initialize previewUrl as null if currentImage is empty or null
+  const [previewUrl, setPreviewUrl] = useState(currentImage || null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Update previewUrl when currentImage prop changes
   useEffect(() => {
-    setPreviewUrl(currentImage);
+    // Only set if there's an actual value
+    if (currentImage) {
+      setPreviewUrl(currentImage);
+    } else {
+      setPreviewUrl(null);
+    }
   }, [currentImage]);
 
   const handleFileChange = async (e) => {
@@ -114,9 +121,10 @@ const ImageUploader = ({
               src={previewUrl}
               onError={(e) => {
                 e.target.onerror = null; // Prevents looping
-                e.target.src = "https://via.placeholder.com/150"; // Placeholder image
+                e.target.src = "https://via.placeholder.com/150?text=Image+Not+Found"; // More descriptive placeholder
+                toast.warning("Could not load the image. Please try uploading again.");
               }}
-              alt="Uploaded preview"
+              alt={`${imageType === "logo" ? "Shop logo" : "Cover image"}`}
               className="absolute top-0 left-0 w-full h-full object-cover"
             />
           </div>
@@ -162,9 +170,9 @@ const ImageUploader = ({
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-t-yellow-500 border-gray-300"></div>
           ) : (
             <>
-              <Image className="w-8 h-8 text-gray-400 mb-2" />
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Click to upload image
+              <Image className="w-12 h-12 text-gray-400 mb-3" />
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                {imageType === "logo" ? "Upload shop logo" : "Upload cover image"}
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                 JPG, PNG, GIF, WEBP (Max 5MB)
