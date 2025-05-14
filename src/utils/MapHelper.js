@@ -170,35 +170,67 @@ const formatCoordinates = (coords) => {
  * @returns {Promise} A promise that resolves with the coordinates {lat, lng}
  */
 export const getCoordsFromAddress = async (address) => {
+  console.log(`[getCoordsFromAddress] Starting geocoding for address: "${address}"`);
+  
   try {
+    // Check if we're online first
+    if (!navigator.onLine) {
+      console.warn("[getCoordsFromAddress] Device appears to be offline");
+      throw new Error("Device is offline. Cannot geocode address.");
+    }
+    
+    console.log(`[getCoordsFromAddress] Sending request to Nominatim API`);
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+    console.log(`[getCoordsFromAddress] Request URL: ${url}`);
+    
+    // Add timeout to prevent hanging requests
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      console.warn("[getCoordsFromAddress] Request timeout after 10 seconds");
+      controller.abort();
+    }, 10000);
+    
     // Make sure to follow Nominatim usage policy
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-        address
-      )}&limit=1`,
-      {
-        headers: {
-          "Accept-Language": "en",
-          "User-Agent": "CloseCart Dashboard Application", // Identify your application
-        },
-      }
-    );
+    const response = await fetch(url, {
+      headers: {
+        "Accept-Language": "en",
+        "User-Agent": "CloseCart Dashboard Application", // Identify your application
+      },
+      signal: controller.signal,
+    });
+    
+    // Clear the timeout since request completed
+    clearTimeout(timeoutId);
 
+    console.log(`[getCoordsFromAddress] Response status: ${response.status}`);
+    
     if (!response.ok) {
-      throw new Error("Network response was not ok");
+      console.error(`[getCoordsFromAddress] HTTP error: ${response.status}`);
+      throw new Error(`Network response was not ok: ${response.status}`);
     }
 
     const data = await response.json();
-
+    console.log(`[getCoordsFromAddress] Received ${data.length} results`);
+    
     if (data && data.length > 0) {
-      return {
+      const result = {
         lat: parseFloat(data[0].lat),
         lng: parseFloat(data[0].lon),
       };
+      console.log(`[getCoordsFromAddress] Found coordinates:`, result);
+      return result;
     }
+    
+    console.warn(`[getCoordsFromAddress] No location found for address: "${address}"`);
     throw new Error("Location not found");
   } catch (error) {
-    console.error("Error geocoding address:", error);
+    // Check if it's an abort error (timeout)
+    if (error.name === "AbortError") {
+      console.error("[getCoordsFromAddress] Request timed out");
+      throw new Error("Geocoding request timed out - the service took too long to respond");
+    }
+    
+    console.error(`[getCoordsFromAddress] Error geocoding address:`, error);
     throw error;
   }
 };
