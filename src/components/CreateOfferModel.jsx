@@ -187,7 +187,7 @@ const CreateModal = ({
             />
             <button
               onClick={handleAddTag}
-              className="px-3 py-2 ml-3 bg-gray-600 hover:bg-gray-500 dark:text-white text-gray-600 rounded-r-lg"
+              className="px-3 py-2 ml-3 dark:bg-gray-600 bg-gray-100 hover:bg-gray-500 dark:text-white text-gray-600 rounded-r-lg"
             >
               <Plus size={18} />
             </button>
