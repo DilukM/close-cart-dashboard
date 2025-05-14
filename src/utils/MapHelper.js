@@ -119,16 +119,15 @@ const showWarningToast = (message) => {
  */
 export const getAddressFromCoords = async (location) => {
   try {
-    
-    const corsProxy = 'https://corsproxy.io/?';
-    const targetUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.lat}&lon=${location.lng}&zoom=18&addressdetails=1`;
-    
+    // Make sure to follow Nominatim usage policy:
+    // 1. Add meaningful user agent
+    // 2. Maximum 1 request per second
     const response = await fetch(
-      `${corsProxy}${encodeURIComponent(targetUrl)}`,
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.lat}&lon=${location.lng}&zoom=18&addressdetails=1`,
       {
         headers: {
           "Accept-Language": "en",
-          "User-Agent": "CloseCart Dashboard Application",
+          "User-Agent": "CloseCart Dashboard Application", // Identify your application
         },
       }
     );
