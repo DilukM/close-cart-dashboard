@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Plus, Tag as TagIcon, Loader2, Upload } from "lucide-react";
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
 const CreateModal = ({
   onClose,
@@ -120,7 +120,7 @@ const CreateModal = ({
       <div className="space-y-4">
         <input
           placeholder="Offer Title"
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
+          className="w-full px-4 py-2 dark:bg-gray-700 bg-white border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
         />
@@ -131,7 +131,7 @@ const CreateModal = ({
             onChange={(e) =>
               setFormData({ ...formData, category: e.target.value })
             }
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500 appearance-none"
+            className="w-full px-4 py-2 dark:bg-gray-700 bg-white border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500 appearance-none"
           >
             <option value="" disabled>
               Select Category
@@ -146,7 +146,7 @@ const CreateModal = ({
 
         <textarea
           placeholder="Description"
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
+          className="w-full px-4 py-2 dark:bg-gray-700 bg-white border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
           rows="3"
           value={formData.description}
           onChange={(e) =>
@@ -166,15 +166,15 @@ const CreateModal = ({
                 key={tag}
                 className="flex items-center bg-yellow-500/30 text-yellow-300 text-sm rounded-full px-3 py-1"
               >
-                  {tag}
-                  <button
-                    onClick={() => handleRemoveTag(tag)}
-                    className="ml-2 text-yellow-300 hover:text-white"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
+                {tag}
+                <button
+                  onClick={() => handleRemoveTag(tag)}
+                  className="ml-2 text-yellow-300 hover:text-white"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
           </div>
           <div className="flex">
             <input
@@ -183,7 +183,7 @@ const CreateModal = ({
               value={newTag}
               onChange={(e) => setNewTag(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddTag()}
-              className="flex-1 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
+              className="flex-1 px-4 py-2 dark:bg-gray-700 bg-white border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
             />
             <button
               onClick={handleAddTag}
@@ -256,7 +256,7 @@ const CreateModal = ({
           <input
             type="number"
             placeholder="Discount %"
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
+            className="w-full px-4 py-2 dark:bg-gray-700 bg-white border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
             value={formData.discount}
             onChange={(e) =>
               setFormData({ ...formData, discount: e.target.value })
@@ -271,7 +271,7 @@ const CreateModal = ({
             </label>
             <input
               type="date"
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
+              className="w-full px-4 py-2 dark:bg-gray-700 bg-white border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
               value={formData.startDate ? formData.startDate.split("T")[0] : ""}
               onChange={(e) =>
                 setFormData({ ...formData, startDate: e.target.value })
@@ -282,7 +282,7 @@ const CreateModal = ({
             <label className="block text-xs text-gray-400 mb-1">End Date</label>
             <input
               type="date"
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
+              className="w-full px-4 py-2 dark:bg-gray-700 bg-white border border-gray-600 rounded-lg text-white focus:outline-none focus:border-yellow-500"
               value={formData.endDate ? formData.endDate.split("T")[0] : ""}
               onChange={(e) =>
                 setFormData({ ...formData, endDate: e.target.value })
@@ -293,7 +293,7 @@ const CreateModal = ({
 
         <div className="flex justify-end gap-4 mt-6">
           <button
-            className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors duration-300"
+            className="px-4 py-2 dark:bg-gray-700 bg-white text-white rounded-lg hover:bg-gray-600 transition-colors duration-300"
             onClick={onClose}
             disabled={isSubmitting}
           >
