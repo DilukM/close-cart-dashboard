@@ -114,9 +114,6 @@ const CreateModal = ({
 
   return (
     <div>
-      <h2 className="text-2xl font-bold dark:text-white text-gray-600 mb-4">
-        {isEditMode ? "Edit Offer" : "Create New Offer"}
-      </h2>
       <div className="space-y-4">
         <input
           placeholder="Offer Title"
