@@ -164,7 +164,7 @@ const CreateModal = ({
             {(formData.tags || []).map((tag) => (
               <div
                 key={tag}
-                className="flex items-center bg-yellow-500/30 text-yellow-300 text-sm rounded-full px-3 py-1"
+                className="flex items-center bg-yellow-500/30 dark:text-yellow-300 text-yellow-700 text-sm rounded-full px-3 py-1"
               >
                 {tag}
                 <button
