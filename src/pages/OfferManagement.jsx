@@ -343,7 +343,7 @@ const OfferManagement = () => {
             Create New Offer
           </h1>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+        <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg">
           <CreateModal
             onClose={() => {
               if (!isSubmitting) {
