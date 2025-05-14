@@ -120,7 +120,7 @@ const CreateModal = ({
       <div className="space-y-4">
         <input
           placeholder="Offer Title"
-          className="w-full px-4 py-2 dark:bg-gray-700 bg-gray-100 border border-gray-600 rounded-lg dark:text-white text-gray-600 focus:outline-none focus:border-yellow-500"
+          className="w-full px-4 py-2 dark:bg-gray-700 bg-gray-100 border dark:border-gray-600 border-gray-200 rounded-lg dark:text-white text-gray-600 focus:outline-none focus:border-yellow-500"
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
         />
@@ -131,7 +131,7 @@ const CreateModal = ({
             onChange={(e) =>
               setFormData({ ...formData, category: e.target.value })
             }
-            className="w-full px-4 py-2 dark:bg-gray-700 bg-gray-100 border border-gray-600 rounded-lg dark:text-white text-gray-600 focus:outline-none focus:border-yellow-500 appearance-none"
+            className="w-full px-4 py-2 dark:bg-gray-700 bg-gray-100 border dark:border-gray-600 border-gray-200 rounded-lg dark:text-white text-gray-600 focus:outline-none focus:border-yellow-500 appearance-none"
           >
             <option value="" disabled>
               Select Category
@@ -146,7 +146,7 @@ const CreateModal = ({
 
         <textarea
           placeholder="Description"
-          className="w-full px-4 py-2 dark:bg-gray-700 bg-gray-100 border border-gray-600 rounded-lg dark:text-white text-gray-600 focus:outline-none focus:border-yellow-500"
+          className="w-full px-4 py-2 dark:bg-gray-700 bg-gray-100 border dark:border-gray-600 border-gray-200 rounded-lg dark:text-white text-gray-600 focus:outline-none focus:border-yellow-500"
           rows="3"
           value={formData.description}
           onChange={(e) =>
@@ -183,7 +183,7 @@ const CreateModal = ({
               value={newTag}
               onChange={(e) => setNewTag(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddTag()}
-              className="flex-1 px-4 py-2 dark:bg-gray-700 bg-gray-100 border border-gray-600 rounded-lg dark:text-white text-gray-600 focus:outline-none focus:border-yellow-500"
+              className="flex-1 px-4 py-2 dark:bg-gray-700 bg-gray-100 border dark:dark:border-gray-600 border-gray-200 border-gray-200 rounded-lg dark:text-white text-gray-600 focus:outline-none focus:border-yellow-500"
             />
             <button
               onClick={handleAddTag}
@@ -230,7 +230,7 @@ const CreateModal = ({
               </div>
             ) : (
               <label className="w-full cursor-pointer">
-                <div className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-600 rounded-lg hover:border-yellow-500 transition-colors duration-300">
+                <div className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed dark:border-gray-600 border-gray-200 rounded-lg hover:border-yellow-500 transition-colors duration-300">
                   <Upload size={24} className="text-gray-400 mb-2" />
                   <span className="text-gray-400">Click to upload image</span>
                   <span className="text-xs text-gray-500 mt-1">
@@ -256,7 +256,7 @@ const CreateModal = ({
           <input
             type="number"
             placeholder="Discount %"
-            className="w-full px-4 py-2 dark:bg-gray-700 bg-gray-100 border border-gray-600 rounded-lg dark:text-white text-gray-600 focus:outline-none focus:border-yellow-500"
+            className="w-full px-4 py-2 dark:bg-gray-700 bg-gray-100 border dark:border-gray-600 border-gray-200 rounded-lg dark:text-white text-gray-600 focus:outline-none focus:border-yellow-500"
             value={formData.discount}
             onChange={(e) =>
               setFormData({ ...formData, discount: e.target.value })
@@ -271,7 +271,7 @@ const CreateModal = ({
             </label>
             <input
               type="date"
-              className="w-full px-4 py-2 dark:bg-gray-700 bg-gray-100 border border-gray-600 rounded-lg dark:text-white text-gray-600 focus:outline-none focus:border-yellow-500"
+              className="w-full px-4 py-2 dark:bg-gray-700 bg-gray-100 border dark:border-gray-600 border-gray-200 rounded-lg dark:text-white text-gray-600 focus:outline-none focus:border-yellow-500"
               value={formData.startDate ? formData.startDate.split("T")[0] : ""}
               onChange={(e) =>
                 setFormData({ ...formData, startDate: e.target.value })
@@ -282,7 +282,7 @@ const CreateModal = ({
             <label className="block text-xs text-gray-400 mb-1">End Date</label>
             <input
               type="date"
-              className="w-full px-4 py-2 dark:bg-gray-700 bg-gray-100 border border-gray-600 rounded-lg dark:dark:text-white text-gray-600 text-gray-600 focus:outline-none focus:border-yellow-500"
+              className="w-full px-4 py-2 dark:bg-gray-700 bg-gray-100 border dark:border-gray-600 border-gray-200 rounded-lg dark:dark:text-white text-gray-600 text-gray-600 focus:outline-none focus:border-yellow-500"
               value={formData.endDate ? formData.endDate.split("T")[0] : ""}
               onChange={(e) =>
                 setFormData({ ...formData, endDate: e.target.value })
