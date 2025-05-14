@@ -118,45 +118,79 @@ const showWarningToast = (message) => {
  * @returns {Promise} A promise that resolves with the address string
  */
 export const getAddressFromCoords = async (coords) => {
-  // Increase timeout to 10 seconds
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000);
-  
-  try {
-    // First try Nominatim
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&addressdetails=1&zoom=18`,
-      {
-        headers: {
-          "Accept-Language": "en",
-          "User-Agent": "CloseCart Dashboard",
-        },
-        signal: controller.signal,
-      }
-    );
+  console.log(
+    `[getAddressFromCoords] Starting geocoding for: lat=${coords.lat}, lng=${coords.lng}`
+  );
 
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data.display_name || formatCoordinates(coords);
-    
-  } catch (error) {
-    // Clear timeout if there was an error
-    clearTimeout(timeoutId);
-    
-    if (error.name === "AbortError") {
-      console.warn("Geocoding request timed out, falling back to coordinates display");
-      return formatCoordinates(coords);
-    }
-    
-    // If network error, simply return formatted coordinates instead of throwing
-    console.warn("Geocoding request failed, using coordinates instead:", error);
+  // First check if we're online
+  if (!navigator.onLine) {
+    console.warn(
+      "[getAddressFromCoords] Device is offline, returning coordinates only"
+    );
     return formatCoordinates(coords);
   }
+
+  async function tryNominatim() {
+    console.log("[getAddressFromCoords] Trying Nominatim API");
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&addressdetails=1&zoom=14`,
+        {
+          headers: {
+            "Accept-Language": "en",
+            "User-Agent": "CloseCart Dashboard",
+          },
+          signal: controller.signal,
+        }
+      );
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) return null;
+
+      const data = await response.json();
+      return data.display_name || null;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      console.warn("[getAddressFromCoords] Nominatim error:", error);
+      return null;
+    }
+  }
+
+  async function tryAlternativeAPI() {
+    // This is just an example - you'd need to use a real alternative API
+    console.log("[getAddressFromCoords] Trying backup geocoding service");
+    try {
+      // This is a placeholder - replace with an actual alternative geocoding API
+      // const response = await fetch(`https://api.example.com/geocode?lat=${coords.lat}&lng=${coords.lng}`);
+      // const data = await response.json();
+      // return data.address;
+      return null;
+    } catch (error) {
+      console.warn("[getAddressFromCoords] Alternative API error:", error);
+      return null;
+    }
+  }
+
+  // Try Nominatim first, then fallback to alternative
+  const nominatimResult = await tryNominatim();
+  if (nominatimResult) {
+    console.log(`[getAddressFromCoords] Address found: ${nominatimResult}`);
+    return nominatimResult;
+  }
+
+  // If Nominatim fails, try alternative (if implemented)
+  const alternativeResult = await tryAlternativeAPI();
+  if (alternativeResult) {
+    return alternativeResult;
+  }
+
+  // If both fail, return coordinates
+  console.warn("[getAddressFromCoords] All geocoding attempts failed");
+  return formatCoordinates(coords);
 };
 
 // Helper function to format coordinates for display
@@ -170,26 +204,30 @@ const formatCoordinates = (coords) => {
  * @returns {Promise} A promise that resolves with the coordinates {lat, lng}
  */
 export const getCoordsFromAddress = async (address) => {
-  console.log(`[getCoordsFromAddress] Starting geocoding for address: "${address}"`);
-  
+  console.log(
+    `[getCoordsFromAddress] Starting geocoding for address: "${address}"`
+  );
+
   try {
     // Check if we're online first
     if (!navigator.onLine) {
       console.warn("[getCoordsFromAddress] Device appears to be offline");
       throw new Error("Device is offline. Cannot geocode address.");
     }
-    
+
     console.log(`[getCoordsFromAddress] Sending request to Nominatim API`);
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+      address
+    )}&limit=1`;
     console.log(`[getCoordsFromAddress] Request URL: ${url}`);
-    
+
     // Add timeout to prevent hanging requests
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
       console.warn("[getCoordsFromAddress] Request timeout after 10 seconds");
       controller.abort();
-    }, 10000);
-    
+    }, 15000);
+
     // Make sure to follow Nominatim usage policy
     const response = await fetch(url, {
       headers: {
@@ -198,12 +236,12 @@ export const getCoordsFromAddress = async (address) => {
       },
       signal: controller.signal,
     });
-    
+
     // Clear the timeout since request completed
     clearTimeout(timeoutId);
 
     console.log(`[getCoordsFromAddress] Response status: ${response.status}`);
-    
+
     if (!response.ok) {
       console.error(`[getCoordsFromAddress] HTTP error: ${response.status}`);
       throw new Error(`Network response was not ok: ${response.status}`);
@@ -211,7 +249,7 @@ export const getCoordsFromAddress = async (address) => {
 
     const data = await response.json();
     console.log(`[getCoordsFromAddress] Received ${data.length} results`);
-    
+
     if (data && data.length > 0) {
       const result = {
         lat: parseFloat(data[0].lat),
@@ -220,16 +258,20 @@ export const getCoordsFromAddress = async (address) => {
       console.log(`[getCoordsFromAddress] Found coordinates:`, result);
       return result;
     }
-    
-    console.warn(`[getCoordsFromAddress] No location found for address: "${address}"`);
+
+    console.warn(
+      `[getCoordsFromAddress] No location found for address: "${address}"`
+    );
     throw new Error("Location not found");
   } catch (error) {
     // Check if it's an abort error (timeout)
     if (error.name === "AbortError") {
       console.error("[getCoordsFromAddress] Request timed out");
-      throw new Error("Geocoding request timed out - the service took too long to respond");
+      throw new Error(
+        "Geocoding request timed out - the service took too long to respond"
+      );
     }
-    
+
     console.error(`[getCoordsFromAddress] Error geocoding address:`, error);
     throw error;
   }
@@ -299,7 +341,7 @@ export const getCachedAddressFromCoords = createGeoCache(
     if (!isOnline()) {
       return formatCoordinates(coords);
     }
-    
+
     try {
       const address = await getAddressFromCoords(coords);
       return address;
