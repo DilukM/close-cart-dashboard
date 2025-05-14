@@ -49,6 +49,10 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
           setAddress(addressString);
         } catch (error) {
           console.error("Error fetching address:", error);
+          // Add fallback when address fetch fails
+          setAddress(
+            `Location (${location.lat.toFixed(6)}, ${location.lng.toFixed(6)})`
+          );
         } finally {
           setIsAddressLoading(false); // End loading
         }
@@ -70,6 +74,12 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
           setAddress(addressString);
         } catch (error) {
           console.error("Error fetching initial address:", error);
+          // Add fallback when address fetch fails
+          setAddress(
+            `Location (${formattedInitialLocation.lat.toFixed(
+              6
+            )}, ${formattedInitialLocation.lng.toFixed(6)})`
+          );
         } finally {
           setIsAddressLoading(false); // End loading
         }
@@ -90,7 +100,7 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
 
       setIsLoading(true);
       try {
-        // Use Nominatim API for geocoding (free and no API key required)
+        // Use Nominatim API for geocoding
         const response = await fetch(
           `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
             query
