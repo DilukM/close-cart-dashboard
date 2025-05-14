@@ -335,7 +335,7 @@ const OfferManagement = () => {
         <div className="flex items-center mb-6">
           <button
             onClick={() => setCurrentView("list")}
-            className="mr-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            className="mr-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
           >
             <ArrowLeft size={20} />
           </button>
@@ -369,7 +369,7 @@ const OfferManagement = () => {
         <div className="flex items-center mb-6">
           <button
             onClick={() => setCurrentView("detail")}
-            className="mr-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            className="mr-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
           >
             <ArrowLeft size={20} />
           </button>
