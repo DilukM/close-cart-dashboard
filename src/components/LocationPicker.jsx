@@ -90,7 +90,7 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
 
       setIsLoading(true);
       try {
-        // Use Nominatim API for geocoding
+        // Use Nominatim API for geocoding 
         const response = await fetch(
           `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
             query
@@ -103,6 +103,7 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
           }
         );
 
+        // Check if component is still mounted before updating state
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
@@ -132,6 +133,13 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
       }
     }, 500)
   ).current;
+
+  // Clean up debounced function on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
 
   // Handle location change from map
   const handleLocationChange = (newLocation) => {
