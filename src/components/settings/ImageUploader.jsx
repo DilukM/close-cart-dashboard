@@ -9,21 +9,26 @@ const ImageUploader = ({
   aspectRatio = 1,
   imageType = "logo",
 }) => {
-  // Initialize previewUrl as null if currentImage is empty or null
-  const [previewUrl, setPreviewUrl] = useState(currentImage || null);
+  // Initialize previewUrl properly, checking for valid strings
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Update previewUrl when currentImage prop changes
+  // Update previewUrl when currentImage prop changes, with proper validation
   useEffect(() => {
-    // Only set if there's an actual value
-    if (currentImage) {
+    // Only set previewUrl if currentImage is a non-empty string
+    if (
+      currentImage &&
+      typeof currentImage === "string" &&
+      currentImage.trim() !== ""
+    ) {
       setPreviewUrl(currentImage);
     } else {
       setPreviewUrl(null);
     }
   }, [currentImage]);
 
+  // Rest of the component remains the same...
   const handleFileChange = async (e) => {
     const shopId = getCurrentShopId();
     const file = e.target.files[0];
@@ -104,6 +109,8 @@ const ImageUploader = ({
     paddingBottom: `${(1 / aspectRatio) * 100}%`,
   };
 
+  // Fix for the ProfileSettings page in ProfileSettings.jsx
+  // The issue is likely in this part - ensuring we display proper placeholders
   return (
     <div className="w-full">
       <input
@@ -120,9 +127,9 @@ const ImageUploader = ({
             <img
               src={previewUrl}
               onError={(e) => {
+                console.log("Image failed to load:", previewUrl);
                 e.target.onerror = null; // Prevents looping
-                e.target.src = "https://via.placeholder.com/150?text=Image+Not+Found"; // More descriptive placeholder
-                toast.warning("Could not load the image. Please try uploading again.");
+                removeImage(); // Remove the image if it fails to load
               }}
               alt={`${imageType === "logo" ? "Shop logo" : "Cover image"}`}
               className="absolute top-0 left-0 w-full h-full object-cover"
@@ -150,21 +157,12 @@ const ImageUploader = ({
         <button
           onClick={triggerFileInput}
           disabled={isUploading}
-          className={`w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-4 flex flex-col items-center justify-center transition-all
-                    ${
-                      isUploading
-                        ? "opacity-70 cursor-not-allowed"
-                        : "hover:border-yellow-500 dark:hover:border-yellow-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-                    }`}
-          style={
-            aspectRatioStyles
-              ? {
-                  ...aspectRatioStyles,
-                  paddingBottom: "unset",
-                  minHeight: "150px",
-                }
-              : {}
-          }
+          className="w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-4 flex flex-col items-center justify-center transition-all
+                    hover:border-yellow-500 dark:hover:border-yellow-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+          style={{
+            minHeight: "150px",
+            position: "relative",
+          }}
         >
           {isUploading ? (
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-t-yellow-500 border-gray-300"></div>
@@ -172,7 +170,9 @@ const ImageUploader = ({
             <>
               <Image className="w-12 h-12 text-gray-400 mb-3" />
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                {imageType === "logo" ? "Upload shop logo" : "Upload cover image"}
+                {imageType === "logo"
+                  ? "Upload shop logo"
+                  : "Upload cover image"}
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                 JPG, PNG, GIF, WEBP (Max 5MB)
