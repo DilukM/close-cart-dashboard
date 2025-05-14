@@ -169,7 +169,7 @@ const CreateModal = ({
                 {tag}
                 <button
                   onClick={() => handleRemoveTag(tag)}
-                  className="ml-2 text-yellow-300 hover:dark:text-white text-gray-600"
+                  className="ml-2 dark:text-yellow-300 text-yellow-700 hover:dark:text-white text-gray-600"
                 >
                   <X size={14} />
                 </button>
