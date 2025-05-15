@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MapPin, Navigation, Search, X, Loader2 } from "lucide-react";
 import Map from "./Map";
-import { getCurrentLocation, getAddressFromCoords, getCoordsFromAddress, throttle } from "../utils/MapHelper";
+import { getCurrentLocation, getAddressFromCoords } from "../utils/MapHelper";
+import debounce from "lodash/debounce";
 
 const LocationPicker = ({ initialLocation, onLocationChange }) => {
   const formattedInitialLocation = initialLocation
@@ -14,17 +15,13 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
   const [address, setAddress] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false); // Added to track search state
   const [isAddressLoading, setIsAddressLoading] = useState(false);
-  const [isSearching, setIsSearching] = useState(false); // Track if search is in progress
-  const [requestInProgress, setRequestInProgress] = useState(false); // Mutex-like state
-  const searchTimeoutRef = useRef(null);
 
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const resultsContainerRef = useRef(null);
-  
-  // Reference to store the current abort controller
-  const abortControllerRef = useRef(null);
+  const searchInputRef = useRef(null); // Added ref for the search input
 
   // Handle clicks outside search results to close dropdown
   useEffect(() => {
@@ -55,7 +52,7 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
         } catch (error) {
           console.error("Error fetching address:", error);
         } finally {
-          setIsAddressLoading(false);
+          setIsAddressLoading(false); // End loading
         }
       };
 
@@ -76,7 +73,7 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
         } catch (error) {
           console.error("Error fetching initial address:", error);
         } finally {
-          setIsAddressLoading(false);
+          setIsAddressLoading(false); // End loading
         }
       }
     };
@@ -84,88 +81,64 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
     fetchInitialAddress();
   }, [formattedInitialLocation]);
 
-  // Strictly controlled search function that ensures only one request at a time
-  const searchLocations = async (query) => {
-    if (!query.trim() || requestInProgress) {
-      return;
-    }
-
-    // Set mutex lock
-    setRequestInProgress(true);
-    
-    // Cancel any previous request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    // Create new abort controller
-    abortControllerRef.current = new AbortController();
-    const signal = abortControllerRef.current.signal;
-
-    setIsLoading(true);
-    try {
-      console.log("Sending geocoding request for:", query);
-      
-      // Use cached and throttled function from MapHelper
-      const data = await getCoordsFromAddress(query);
-      
-      if (!data || signal.aborted) {
+  // Create debounced search function
+  const debouncedSearch = useRef(
+    debounce(async (query) => {
+      if (!query.trim()) {
+        setSearchResults([]);
+        setShowResults(false);
+        setIsSearching(false);
         return;
       }
 
-      // Process results
-      if (data.results && data.results.length > 0) {
-        setSearchResults(
-          data.results.map((result) => ({
-            id: result.place_id || `${result.lat}_${result.lng}`,
-            address: result.display_name,
-            location: {
-              lat: parseFloat(result.lat),
-              lng: parseFloat(result.lng),
+      setIsSearching(true);
+      try {
+        // Use Nominatim API for geocoding 
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+            query
+          )}&limit=5`,
+          {
+            headers: {
+              "Accept-Language": "en", // Prefer English results
+              "User-Agent": "CloseCart Dashboard", // Identify app as required by OSM policy
             },
-          }))
+          }
         );
-        setShowResults(true);
-      } else {
-        setSearchResults([]);
-        setShowResults(false);
-      }
-    } catch (error) {
-      if (error.name !== 'AbortError') {
-        console.error("Error searching for location:", error);
-      }
-    } finally {
-      if (!signal.aborted) {
-        setIsLoading(false);
-      }
-      // Release mutex lock
-      setRequestInProgress(false);
-    }
-  };
 
-  // Simple throttled trigger that prevents rapid fire calls
-  const throttledSearch = useRef(
-    throttle((query) => {
-      console.log("Throttled search triggered for:", query);
-      searchLocations(query);
-    }, 1000) // Only allow one call per second
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const data = await response.json();
+        console.log("Search results:", data); // Debug search results
+
+        if (data && data.length > 0) {
+          setSearchResults(
+            data.map((result) => ({
+              id: result.place_id,
+              address: result.display_name,
+              location: {
+                lat: parseFloat(result.lat),
+                lng: parseFloat(result.lon),
+              },
+            }))
+          );
+          setShowResults(true);
+        } else {
+          setSearchResults([]);
+          setShowResults(false);
+        }
+      } catch (error) {
+        console.error("Error searching for location:", error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 500)
   ).current;
 
-  // Clean up on component unmount
-  useEffect(() => {
-    return () => {
-      // Cancel any ongoing fetch request
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-      // Clear any pending timeouts
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Handle location change from map
+  // Handle location change from map only if user is interacting with the map directly
   const handleLocationChange = (newLocation) => {
     setLocation(newLocation);
     onLocationChange(newLocation);
@@ -186,17 +159,11 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
     }
   };
 
-  // Handle search input change - now only updates the query without auto-searching
+  // Handle search input change
   const handleSearchInputChange = (e) => {
     const value = e.target.value;
     setSearchQuery(value);
-  };
-
-  // Explicit search button handler for manual searches only
-  const handleSearch = () => {
-    if (searchQuery.trim() && !requestInProgress) {
-      throttledSearch(searchQuery);
-    }
+    debouncedSearch(value);
   };
 
   // Select a search result
@@ -221,19 +188,19 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
             Search Location
           </label>
         </div>
-        <div className="relative flex gap-2">
+        <div className="relative flex">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={handleSearchInputChange}
+              ref={searchInputRef}
               placeholder="Search for a location"
               className="w-full pl-10 pr-10 py-2 bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-800 dark:text-white focus:outline-none focus:border-yellow-500 transition-colors"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleSearch();
+              onClick={() => {
+                if (searchQuery && searchResults.length > 0) {
+                  setShowResults(true);
                 }
               }}
             />
@@ -250,21 +217,17 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
               </button>
             )}
           </div>
-          <button
-            onClick={handleSearch}
-            disabled={isLoading || !searchQuery.trim()}
-            className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              "Search"
-            )}
-          </button>
         </div>
 
+        {/* Search loading indicator */}
+        {isSearching && (
+          <div className="absolute right-12 top-1/2 transform -translate-y-1/2">
+            <Loader2 className="h-4 w-4 animate-spin text-yellow-500" />
+          </div>
+        )}
+
         {/* Search results dropdown - Using fixed positioning for guaranteed overlay */}
-        {showResults && searchResults.length > 0 && (
+        {showResults && (
           <div
             style={{
               position: "absolute",
@@ -280,18 +243,24 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
             }}
             className="mt-1 rounded-md dark:bg-gray-800"
           >
-            {searchResults.map((result) => (
-              <div
-                key={result.id}
-                className="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-start gap-2"
-                onClick={() => handleSelectResult(result)}
-              >
-                <MapPin className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-1" />
-                <span className="text-gray-800 dark:text-gray-200 text-sm">
-                  {result.address}
-                </span>
+            {searchResults.length > 0 ? (
+              searchResults.map((result) => (
+                <div
+                  key={result.id}
+                  className="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-start gap-2"
+                  onClick={() => handleSelectResult(result)}
+                >
+                  <MapPin className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-1" />
+                  <span className="text-gray-800 dark:text-gray-200 text-sm">
+                    {result.address}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="p-3 text-gray-500 dark:text-gray-400 text-center">
+                No results found
               </div>
-            ))}
+            )}
           </div>
         )}
       </div>

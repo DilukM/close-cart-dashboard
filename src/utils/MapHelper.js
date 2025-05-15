@@ -157,16 +157,13 @@ export const getAddressFromCoords = async (location) => {
  */
 export const getCoordsFromAddress = async (address) => {
   try {
-    console.log(`Geocoding request for: "${address}"`);
     // Use backend proxy API instead of direct call to Nominatim
     const response = await fetch(
-      `https://closecart-backend.vercel.app/api/v1/geocoding/forward?address=${encodeURIComponent(address)}&limit=5`,
+      `https://closecart-backend.vercel.app/api/v1/geocoding/forward?address=${encodeURIComponent(address)}`,
       {
         headers: {
           "Accept": "application/json",
         },
-        // Add cache control headers to prevent browser caching
-        cache: 'no-store',
       }
     );
 
@@ -175,9 +172,11 @@ export const getCoordsFromAddress = async (address) => {
     }
 
     const data = await response.json();
-    console.log(`Received ${data.results?.length || 0} results for "${address}"`);
-    
-    return data;
+
+    if (data.success && data.location) {
+      return data.location; // Already in {lat, lng} format
+    }
+    throw new Error("Location not found");
   } catch (error) {
     console.error("Error geocoding address:", error);
     throw error;
@@ -244,7 +243,3 @@ export const getCachedAddressFromCoords = createGeoCache(
 export const getCachedCoordsFromAddress = createGeoCache(
   throttle(getCoordsFromAddress, 1100)
 );
-
-// Apply strict throttling to the geocoding functions
-// Ensures only 1 request per second maximum
-export const throttledGetCoordsFromAddress = throttle(getCoordsFromAddress, 1100);
