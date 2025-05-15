@@ -93,7 +93,7 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
 
       setIsSearching(true);
       try {
-        // Use Nominatim API for geocoding 
+        // Use Nominatim API for geocoding
         const response = await fetch(
           `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
             query
