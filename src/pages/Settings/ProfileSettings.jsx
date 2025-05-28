@@ -198,10 +198,17 @@ const ProfileSettings = () => {
   };
 
   const handleLocationChange = (newLocation) => {
-    setProfileData((prev) => ({
-      ...prev,
-      location: newLocation,
-    }));
+    // Only update if the location is actually different
+    if (
+      !profileData.location ||
+      profileData.location.lat !== newLocation.lat ||
+      profileData.location.lng !== newLocation.lng
+    ) {
+      setProfileData((prev) => ({
+        ...prev,
+        location: newLocation,
+      }));
+    }
   };
 
   const handleBusinessHoursChange = (updatedHours) => {

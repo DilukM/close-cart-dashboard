@@ -118,7 +118,7 @@ const showWarningToast = (message) => {
  * @returns {Promise} A promise that resolves with the address string
  */
 /**
- * Converts coordinates to an address using your backend API proxy for OpenStreetMap's Nominatim 
+ * Converts coordinates to an address using your backend API proxy for OpenStreetMap's Nominatim
  * @param {Object} location - The location object with lat and lng properties
  * @returns {Promise} A promise that resolves with the address string
  */
@@ -129,7 +129,7 @@ export const getAddressFromCoords = async (location) => {
       `https://closecart-backend.vercel.app/api/v1/geocoding/reverse?lat=${location.lat}&lng=${location.lng}`,
       {
         headers: {
-          "Accept": "application/json",
+          Accept: "application/json",
         },
       }
     );
@@ -159,10 +159,12 @@ export const getCoordsFromAddress = async (address) => {
   try {
     // Use backend proxy API instead of direct call to Nominatim
     const response = await fetch(
-      `https://closecart-backend.vercel.app/api/v1/geocoding/forward?address=${encodeURIComponent(address)}`,
+      `https://closecart-backend.vercel.app/api/v1/geocoding/forward?address=${encodeURIComponent(
+        address
+      )}`,
       {
         headers: {
-          "Accept": "application/json",
+          Accept: "application/json",
         },
       }
     );

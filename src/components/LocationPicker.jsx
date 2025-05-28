@@ -15,13 +15,20 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
   const [address, setAddress] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isSearching, setIsSearching] = useState(false); // Added to track search state
+  const [isSearching, setIsSearching] = useState(false);
   const [isAddressLoading, setIsAddressLoading] = useState(false);
+  const [previousLocation, setPreviousLocation] = useState(null);
 
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const resultsContainerRef = useRef(null);
-  const searchInputRef = useRef(null); // Added ref for the search input
+  const searchInputRef = useRef(null);
+
+  // Helper function to check if locations are the same
+  const isSameLocation = (loc1, loc2) => {
+    if (!loc1 || !loc2) return false;
+    return loc1.lat === loc2.lat && loc1.lng === loc2.lng;
+  };
 
   // Handle clicks outside search results to close dropdown
   useEffect(() => {
@@ -41,45 +48,50 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
     };
   }, []);
 
-  // Update address when location changes
+  // Update address when location changes, but only if the location is actually different
   useEffect(() => {
-    if (location) {
-      const fetchAddress = async () => {
-        setIsAddressLoading(true);
-        try {
-          const addressString = await getAddressFromCoords(location);
-          setAddress(addressString);
-        } catch (error) {
-          console.error("Error fetching address:", error);
-        } finally {
-          setIsAddressLoading(false); // End loading
-        }
-      };
-
-      fetchAddress();
+    if (!location || isSameLocation(location, previousLocation)) {
+      return; // Skip if no location or same as previous
     }
-  }, [location]);
 
-  // Fetch address for initial location when component mounts
+    const fetchAddress = async () => {
+      setIsAddressLoading(true);
+      try {
+        const addressString = await getAddressFromCoords(location);
+        setAddress(addressString);
+        // Update previous location after successful fetch
+        setPreviousLocation(location);
+      } catch (error) {
+        console.error("Error fetching address:", error);
+      } finally {
+        setIsAddressLoading(false);
+      }
+    };
+
+    fetchAddress();
+  }, [location, previousLocation]); // Add dependencies to prevent unnecessary fetches
+
+  // Fetch address for initial location when component mounts - only once
   useEffect(() => {
     const fetchInitialAddress = async () => {
-      if (formattedInitialLocation) {
+      if (formattedInitialLocation && !previousLocation) {
         setIsAddressLoading(true);
         try {
           const addressString = await getAddressFromCoords(
             formattedInitialLocation
           );
           setAddress(addressString);
+          setPreviousLocation(formattedInitialLocation);
         } catch (error) {
           console.error("Error fetching initial address:", error);
         } finally {
-          setIsAddressLoading(false); // End loading
+          setIsAddressLoading(false);
         }
       }
     };
 
     fetchInitialAddress();
-  }, [formattedInitialLocation]);
+  }, []); // Empty dependency array to run only once on mount
 
   // Create debounced search function
   const debouncedSearch = useRef(
@@ -111,7 +123,6 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
         }
 
         const data = await response.json();
-        console.log("Search results:", data); // Debug search results
 
         if (data && data.length > 0) {
           setSearchResults(
@@ -140,6 +151,9 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
 
   // Handle location change from map only if user is interacting with the map directly
   const handleLocationChange = (newLocation) => {
+    if (isSameLocation(newLocation, location)) {
+      return; // Prevent unnecessary updates
+    }
     setLocation(newLocation);
     onLocationChange(newLocation);
   };
@@ -149,7 +163,6 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
     setIsLoading(true);
     try {
       const currentLocation = await getCurrentLocation();
-      console.log("Current location:", currentLocation);
       setLocation(currentLocation);
       onLocationChange(currentLocation);
     } catch (error) {
@@ -173,6 +186,7 @@ const LocationPicker = ({ initialLocation, onLocationChange }) => {
     setSearchQuery(result.address);
     setShowResults(false);
     onLocationChange(result.location);
+    setPreviousLocation(result.location);
   };
 
   return (
